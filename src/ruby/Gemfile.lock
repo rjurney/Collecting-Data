@@ -1,0 +1,28 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    avro (1.6.1)
+      yajl-ruby
+    aws-s3 (0.6.2)
+      builder
+      mime-types
+      xml-simple
+    builder (3.0.0)
+    gmail_xoauth (0.3.0)
+      oauth (>= 0.3.6)
+    json (1.6.3)
+    mime-types (1.17.2)
+    oauth (0.4.5)
+    tmail (1.2.7.1)
+    xml-simple (1.1.1)
+    yajl-ruby (1.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  avro
+  aws-s3
+  gmail_xoauth
+  json
+  tmail

@@ -1,42 +1,20 @@
 Collecting Data
 ===============
 
-This is a HOWTO for collecting data in Ruby and Python applications and sending it to S3 via Kafka.
+This is a HOWTO for collecting data in Ruby and Python applications.
 
-An excellent guide to getting started with Kafka by Alejandro Crosa is [here](http://alejandrocrosablog.appspot.com/ruby/linkedin/voldemort/kafka/2011/06/20/Using-LinkedIn-kafka-to-track-activity-streams-in-ruby.html).
+Scraping your Gmail Inbox
+-------------------------
 
-Installation & Setup
---------------------
+### Get an access token via xoauth.py
 
-### Kafka Server Setup
+We first use xoauth.py to get access tokens to access our inbox via Xoauth.  Good instructions for this are [here](http://code.google.com/p/google-mail-xoauth-tools/wiki/XoauthDotPyRunThrough).
 
-Note: You will have to enter the root password for sudo to install some components.
+Download xoauth.py:
+    wget http://google-mail-xoauth-tools.googlecode.com/svn/trunk/python/xoauth.py
 
-Setup may take some time, as components are installed in lib/.
+Run xoauth.py for your gmail address:
+    python xoauth.py --generate_oauth_token --user=my.name@gmail.com
 
-    ./setup.sh
-
-### Ruby Client Setup
-
-    sudo gem install bundler
-    cd src/ruby
-    bundle install
-    cd ../..
-
-### Python Client Setup
-
-Python isn't working yet, owing to a problem building python-snappy for Avro support :(
-
-Sending Avro Messages to Kafka
-------------------------------
-
-### Ruby
-
-    cd src/ruby
-    cd ../..
-
-### Python
-
-Consuming Kafka Messages to S3
-------------------------------
+### 
 
