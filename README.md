@@ -3,6 +3,8 @@ Collecting Data
 
 This is a HOWTO for collecting data in Ruby and Python applications and sending it to S3 via Kafka.
 
+An excellent guide to getting started with Kafka by Alejandro Crosa is [http://alejandrocrosablog.appspot.com/ruby/linkedin/voldemort/kafka/2011/06/20/Using-LinkedIn-kafka-to-track-activity-streams-in-ruby.html](here).
+
 Installation & Setup
 --------------------
 
