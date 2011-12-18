@@ -9,6 +9,7 @@ require 'json'
 require 'uri'
 require 'gmail_xoauth'
 require 'aws/s3'
+require 'thrift'
 
 require 'jcode'
 $KCODE = 'UTF8'
@@ -51,37 +52,16 @@ class ScrapeImap
       begin
         msg = @imap.fetch(message_id,'RFC822.HEADER')[0].attr['RFC822.HEADER']
         mail = TMail::Mail.parse(msg)
-        # No from node - skip
-        next unless mail.header['from'] and mail.header['from'].respond_to? 'addrs'
-
-        # Get a count of all edges to get a divisor for outgoing edge weights
-        recipient_count = self.count_recipients(mail)
-        from_addresses = mail.header['from'].addrs
-        unless from_addresses
-          puts "Skipped email without a from address!"
-          skipped_ids << message_id
-          next
-        end
       rescue Exception => e
-        skipped_ids << message_id
         puts e.message + e.backtrace.join("\n")
         next
       end
   
-      # Build connection graph from recipients
       begin
-        from_addresses.each do |t_from|
-          from_address = t_from.address.downcase.gsub /"/, '' #"
-          from = @graph.find_or_create_vertex({:type => 'email', :Label => from_address, :network => @user_email}, :Label)
-      
-          self.build_connections from_address, from, mail, recipient_count, message_id
-        end
-
-        # Persist to Voldemort as JSON and /tmp as graphml every 100 emails processed
+        parse_email mail
         if ((count % 100) == 0) and (count > 0)
           print "."
         end
-    
       rescue Exception => e
         puts "Exception parsing email: #{e.class} #{e.message} #{e.backtrace}}"
         next
@@ -91,6 +71,16 @@ class ScrapeImap
         init_imap    
       end
       count += 1
+    end
+  end
+  
+  def parse_email(email)
+    from_addresses = mail.header['from'].addrs
+    from_addresses.each do |t_from|
+      from_address = t_from.address.downcase.gsub /"/, '' #"
+      from = @graph.find_or_create_vertex({:type => 'email', :Label => from_address, :network => @user_email}, :Label)
+  
+      self.build_connections from_address, from, mail, recipient_count, message_id
     end
   end
   
