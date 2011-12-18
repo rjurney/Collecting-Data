@@ -10,7 +10,7 @@ rm pig-${pig_version}.tar.gz
 cd pig-${pig_version}
 
 # Patch PIG-2411 so we can use the AvroStorage UDF - see https://issues.apache.org/jira/browse/PIG-2411
-cp ../../src/pig/avrobug.patch .
+cp ../../src/avro/avrobug.patch .
 patch -p0 < avrobug.patch
 
 ant

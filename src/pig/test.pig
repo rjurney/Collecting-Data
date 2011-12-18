@@ -1,14 +1,15 @@
+REGISTER ./lib/pig-0.9.1/build/ivy/lib/Pig/avro-1.4.1.jar
+REGISTER ./lib/pig-0.9.1/build/ivy/lib/Pig/json-simple-1.1.jar
 REGISTER ./lib/pig-0.9.1/contrib/piggybank/java/piggybank.jar
-REGISTER ../elephant-bird/dist/elephant-bird-2.1.2.jar
+REGISTER ./lib/pig-0.9.1/build/ivy/lib/Pig/jackson-core-asl-1.6.0.jar
+REGISTER ./lib/pig-0.9.1/build/ivy/lib/Pig/jackson-mapper-asl-1.6.0.jar
 
-DEFINE ThriftLoader com.twitter.elephantbird.pig.load.LzoThriftB64LinePigLoader();
-
-emails = LOAD '/tmp/emails.dat' USING com.twitter.elephantbird.pig.load.LzoThriftB64LinePigLoader('com.datasyndrome.thrift.Email')
+DEFINE AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 
 -- Remove re-used file locations each time
 rmf /tmp/per_user.avro
 
-messages = LOAD '/tmp/emails.avro' USING AvroStorage();
+messages = LOAD '/tmp/messages.avro' USING AvroStorage();
 
 user_groups = GROUP messages by user_id;
 per_user = FOREACH user_groups {                

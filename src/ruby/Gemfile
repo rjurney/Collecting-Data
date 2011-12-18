@@ -1,7 +1,7 @@
 source :rubygems
 
 gem "json"
-gem "thrift"
+gem "avro"
 gem "tmail"
 gem "gmail_xoauth"
 gem "aws-s3", :require => "aws/s3"

@@ -9,7 +9,7 @@ require 'json'
 require 'uri'
 require 'gmail_xoauth'
 require 'aws/s3'
-require 'thrift'
+require 'avro'
 
 require 'jcode'
 $KCODE = 'UTF8'
