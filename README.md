@@ -8,39 +8,25 @@ Scraping your Gmail Inbox
 
 ### Define a schema for our emails
 
-While it is cumbersome to define static schemas, we need only do so once with Thrift.  Our data is then accessible by any of the languages or tools we will use.
+While it is cumbersome to define static schemas, we need only do so once with Avro.  Our data is then accessible by any of the languages or tools we will use.
 
-Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A corresponding thrift schema for email looks like this:
+Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A corresponding Avro schema for email looks like this:
 
-    namespace java com.datasyndrome.thrift
-    namespace rb DataSyndrome
-    namespace py datasyndrome
-
-    struct EmailAddress {
-      1: string address,
-      2: string name,
-    }
-
-    struct Email {
-      1: required EmailAddress from,
-      2: list<EmailAddress> to,
-      3: list<EmailAddress> cc,
-      4: list<EmailAddress> bcc,
-      5: string reply_to,
-      6: string subject,
-      7: string date,
-      8: string message_id,
-      9: string body,
-    }
-
-
-### Setup elephant-bird and Thrift
-
-Twitter provides a library called [elephant-bird](https://github.com/kevinweil/elephant-bird) that includes several serialization format integration for Pig, including Thrift.  To install it, we need to first install (or downgrade to) [thrift 0.5](http://archive.apache.org/dist/incubator/thrift/0.5.0-incubating/).  There may be additional dependencies for these libraries on your platform.  Note that you can build elephant-bird without protobufs via:
-
-    ant noproto release-jar
-
-A good tutorial for using Thrift with Ruby is [here](http://saravani.wordpress.com/2011/05/03/thrift-ruby-tutorial/).
+{
+      "namespace": "agile.data.avro",
+      "name": "Email",
+      "type": "record",
+      "fields": [
+          {"name":"from", "type": "string"},
+          {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
+          {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
+          {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
+          {"name":"reply-to", "type": ["string", "null"]},
+          {"name":"subject", "type": ["string", "null"]},
+          {"name":"body", "type": ["string", "null"]},
+          {"name":"message-id", "type": ["string", "null"]}
+          ]
+}
 
 ### Get an access token via xoauth.py
 
