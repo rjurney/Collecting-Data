@@ -13,19 +13,20 @@ While it is cumbersome to define static schemas, we need only do so once with Av
 Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A corresponding Avro schema for email looks like this:
 
     {
-          "namespace": "agile.data.avro",
-          "name": "Email",
-          "type": "record",
-          "fields": [
-              {"name":"from", "type": "string"},
-              {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
-              {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
-              {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
-              {"name":"reply-to", "type": ["string", "null"]},
-              {"name":"subject", "type": ["string", "null"]},
-              {"name":"body", "type": ["string", "null"]},
-              {"name":"message-id", "type": ["string", "null"]}
-              ]
+        "namespace": "agile.data.avro",
+        "name": "Email",
+        "type": "record",
+        "fields": [
+            {"name":"message_id", "type": ["string", "null"]},
+            {"name":"from","type": ["string", "null"]},
+            {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
+            {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
+            {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
+            {"name":"reply_to", "type": [{"type":"array", "items":"string"}, "null"]},
+            {"name":"subject", "type": ["string", "null"]},
+            {"name":"body", "type": ["string", "null"]},
+            {"name":"date", "type": ["string", "null"]}
+        ]
     }
 
 ### Scrape your Inbox
@@ -37,7 +38,9 @@ Setup:
     bundle install
     
 
-
 Execute:
 
     bundle exec bin/scrape_mail <email_address> <password> <message_count> <output_filename>
+
+### Processing via Pig
+

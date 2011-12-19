@@ -57,11 +57,12 @@ class MailReader
   
   def avroize(email)
     record = {}
-    ['message_id', 'to', 'cc', 'bcc', 'reply_to', 'subject'].map do |key|
+    ['message_id', 'to', 'cc', 'bcc', 'reply_to', 'subject'].each do |key|
       record[key] = email.send(key) if email.send(key)
     end
-    record['body'] = email.body.to_s if email.body
-    record['from'] = email.from[0].to_s if email.from
+    ['body', 'from', 'date'].each do |key|
+      record[key] = email.send(key).to_s if email.send(key)
+    end
     @avros << record
   end
   
