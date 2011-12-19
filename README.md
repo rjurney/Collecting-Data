@@ -30,4 +30,4 @@ Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A 
 
 ### Scrape your Inbox
 
-    bin/scrape_mail <email_address> <password> <message_count> <output_filename>
+    src/ruby/bin/scrape_mail <email_address> <password> <message_count> <output_filename>
