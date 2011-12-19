@@ -12,21 +12,21 @@ While it is cumbersome to define static schemas, we need only do so once with Av
 
 Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A corresponding Avro schema for email looks like this:
 
-{
-      "namespace": "agile.data.avro",
-      "name": "Email",
-      "type": "record",
-      "fields": [
-          {"name":"from", "type": "string"},
-          {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
-          {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
-          {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
-          {"name":"reply-to", "type": ["string", "null"]},
-          {"name":"subject", "type": ["string", "null"]},
-          {"name":"body", "type": ["string", "null"]},
-          {"name":"message-id", "type": ["string", "null"]}
-          ]
-}
+    {
+          "namespace": "agile.data.avro",
+          "name": "Email",
+          "type": "record",
+          "fields": [
+              {"name":"from", "type": "string"},
+              {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
+              {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
+              {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
+              {"name":"reply-to", "type": ["string", "null"]},
+              {"name":"subject", "type": ["string", "null"]},
+              {"name":"body", "type": ["string", "null"]},
+              {"name":"message-id", "type": ["string", "null"]}
+              ]
+    }
 
 ### Get an access token via xoauth.py
 
