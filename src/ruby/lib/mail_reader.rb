@@ -22,7 +22,7 @@ class MailReader
 
   def init_avro
     file = File.open(@filename, 'wb')
-    schema = Avro::Schema.parse IO.read('../avro/email.schema')
+    schema = Avro::Schema.parse IO.read(File.dirname(__FILE__) + '/../../avro/email.schema')
     writer = Avro::IO::DatumWriter.new(schema)
     dw = Avro::DataFile::Writer.new(file, writer, schema)
   end

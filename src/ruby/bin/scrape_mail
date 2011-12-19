@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'lib/mail_reader'
+$:.unshift File.dirname(__FILE__) + "/../lib"
+require 'mail_reader'
 
 unless ARGV.length == 4
   puts "bin/scrape_mail <email_address> <password> <message_count> <output_filename>"

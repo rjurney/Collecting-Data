@@ -28,14 +28,6 @@ Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A 
               ]
     }
 
-### Get an access token via xoauth.py
-
-We first use [xoauth.py](http://google-mail-xoauth-tools.googlecode.com/svn/trunk/python/xoauth.py) to get access tokens to access our inbox via Xoauth.  Good instructions for this are [here](http://code.google.com/p/google-mail-xoauth-tools/wiki/XoauthDotPyRunThrough).
-
-Once you follow these instructions, you'll have two values:
-
-    oauth_token: 2/cG1NvgxA30c1xZOpPS-kWMxBqiZJ5QsH4cNlropLHt8
-    oauth_token_secret: 9mk8v0qNs20Dw2zSoX6UheAn
-
 ### Scrape your Inbox
 
+    bin/scrape_mail <email_address> <password> <message_count> <output_filename>
