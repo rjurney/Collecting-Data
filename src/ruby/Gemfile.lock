@@ -8,12 +8,21 @@ GEM
       mime-types
       xml-simple
     builder (3.0.0)
-    gmail_xoauth (0.3.0)
-      oauth (>= 0.3.6)
+    i18n (0.6.0)
     json (1.6.3)
+    mail (2.3.0)
+      i18n (>= 0.4.0)
+      mime-types (~> 1.16)
+      treetop (~> 1.4.8)
     mime-types (1.17.2)
-    oauth (0.4.5)
-    tmail (1.2.7.1)
+    polyglot (0.3.3)
+    ruby-gmail (0.2.1)
+      mail (>= 2.2.1)
+      shared-mime-info
+    shared-mime-info (0.1)
+    treetop (1.4.10)
+      polyglot
+      polyglot (>= 0.3.1)
     xml-simple (1.1.1)
     yajl-ruby (1.1.0)
 
@@ -23,6 +32,7 @@ PLATFORMS
 DEPENDENCIES
   avro
   aws-s3
-  gmail_xoauth
   json
-  tmail
+  mail
+  ruby-gmail
+  yajl-ruby

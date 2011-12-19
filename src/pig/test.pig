@@ -7,9 +7,10 @@ REGISTER ./lib/pig-0.9.1/build/ivy/lib/Pig/jackson-mapper-asl-1.6.0.jar
 DEFINE AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 
 -- Remove re-used file locations each time
-rmf /tmp/per_user.avro
+rmf /tmp/per_sender.avro
 
-messages = LOAD '/tmp/messages.avro' USING AvroStorage();
+messages = LOAD '/tmp/emails.avro' USING AvroStorage();
+to_us = FILTER messages BY to.$0 == 'russell.jurney@gmail.com';
 
 user_groups = GROUP messages by user_id;
 per_user = FOREACH user_groups {                

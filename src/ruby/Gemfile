@@ -2,6 +2,7 @@ source :rubygems
 
 gem "json"
 gem "avro"
-gem "tmail"
-gem "gmail_xoauth"
+gem "mail"
+gem "ruby-gmail"
 gem "aws-s3", :require => "aws/s3"
+gem "yajl-ruby", :require => "yajl"

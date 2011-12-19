@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'lib/mail_reader'
+
+unless ARGV.length == 4
+  puts "bin/scrape_mail <email_address> <password> <message_count> <output_filename>"
+  exit
+end
+
+email_address = ARGV[0]
+password = ARGV[1]
+message_count = ARGV[2]
+filename = ARGV[3]
+
+reader = MailReader.new(email_address, password, message_count, filename)
+reader.read
+
+puts "Done!"
