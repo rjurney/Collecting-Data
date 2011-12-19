@@ -31,11 +31,13 @@ Email's format is defined in [RFC-5322](http://tools.ietf.org/html/rfc5322).  A 
 ### Scrape your Inbox
 
 Setup:
+
     cd src/ruby
     sudo gem install bundler
     bundle install
     
 
 
-Execute!:
+Execute:
+
     bundle exec bin/scrape_mail <email_address> <password> <message_count> <output_filename>
