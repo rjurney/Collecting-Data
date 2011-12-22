@@ -65,4 +65,8 @@ Generating to/from pair sent counts from all emails:
     sent_counts = FOREACH froms GENERATE FLATTEN(group) AS (from, to), SIZE(pairs) AS total;
     STORE sent_counts INTO '/tmp/sent_counts.avro' USING AvroStorage();
 
+### Publishing with MongoDB
 
+    MongoDB (from "humongous") is an open source, high-performance, schema-free, document-oriented database written in the C++ programming language
+    
+MongoDB is available [here](http://www.mongodb.org/downloads).  Once you install it and get it running, 
