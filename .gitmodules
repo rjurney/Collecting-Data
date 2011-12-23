@@ -1,0 +1,3 @@
+[submodule "src/ruby/web/view/bootstrap"]
+	path = src/ruby/web/view/bootstrap
+	url = https://github.com/twitter/bootstrap.git
