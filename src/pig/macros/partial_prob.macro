@@ -1,0 +1,3 @@
+DEFINE conditional_probs()
+
+DEFINE row_count_by(A, col, par) RETURNS C { B = group $A by $col parallel $par; $C = foreach B generate group, COUNT($A); }; X = LOAD 'student.txt' AS (name, age, gpa); Y = row_count_by(X, name, 3); dump Y;
