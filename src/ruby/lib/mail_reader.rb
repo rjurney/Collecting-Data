@@ -29,8 +29,7 @@ class MailReader
   
   def trap_signals
     # Trap ctrl-c
-    Signal.trap("SIGINT") { @imap.close; exit }
-    Signal.trap("SIGALRM") { @imap.close; exit }
+    Signal.trap("SIGINT") { @imap.disconnect; @avros.close; exit }
   end
   
   def read

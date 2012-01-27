@@ -8,7 +8,7 @@ REGISTER /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
 REGISTER /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
 
 DEFINE AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
-sh rm -rf '/tmp/sent_counts.avro' /* Workaround for PIG-2441 */
+rmf '/tmp/sent_counts.avro'
 
 messages = LOAD '/tmp/10000_emails.avro' USING AvroStorage();
 messages = FILTER messages BY from IS NOT NULL AND to IS NOT NULL;

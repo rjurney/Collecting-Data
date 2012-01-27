@@ -1,10 +1,15 @@
 require 'rubygems'
 require 'sinatra'
-require 'mongo'
+require 'sinatra/mongo'
+require 'json'
+require 'erb'
 
-@conn = Mongo::Connection.new
-@db   = @conn['test']
-@coll = @db['pig']
+set :mongo, 'mongo://localhost/agile_data'
 
-puts "There are #{@coll.count} records. Here they are:"
-@coll.find.each { |doc| puts doc.inspect }
+get '/' do
+  erb :index
+end
+
+get '/sent_counts/:from/:to' do |from, to|
+  JSON.pretty_generate mongo['sent_counts'].find_one({:from => from, :to => to})
+end
