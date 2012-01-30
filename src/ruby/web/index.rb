@@ -11,5 +11,6 @@ get '/' do
 end
 
 get '/sent_counts/:from/:to' do |from, to|
-  JSON.pretty_generate mongo['sent_counts'].find_one({:from => from, :to => to})
+  @data = mongo['sent_counts'].find_one({:from => from, :to => to})
+  erb :table
 end
