@@ -87,14 +87,29 @@ class MailReader
     record = {}
     ['message_id', 'to', 'cc', 'bcc', 'reply_to', 'subject'].each do |key|
       record[key] = email.send(key) if email.send(key)
+      record[key] = convert_to_utf8(record[key])
     end
     ['from', 'date'].each do |key|
       record[key] = email.send(key).to_s if email.send(key)
+      record[key] = convert_to_utf8(record[key])
     end
     
     # Must convert to UTF-8, or our Avros won't parse
     record['body'] = email.body.encoded.toutf8
     @avros << record
+  end
+  
+  def convert_to_utf8(part)
+    if part.is_a? String
+      part.toutf8
+    elsif part.is_a? Array
+      part.each {|p| p.toutf8}
+    end
+  end
+  
+  def convert_body(body)
+    c = Iconv.new('ISO-8859-1', 'UTF-8')
+    
   end
   
   def connect
