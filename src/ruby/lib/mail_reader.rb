@@ -45,14 +45,15 @@ class MailReader
         puts email.subject
       rescue Exception => e
         puts "Exception parsing email: #{e.class} #{e.message} #{e.backtrace}}"
+        connect if @imap.disconnected? 
         next
       rescue EOFError, IOError, Error => e
         puts "Error with IMAP connection: #{e.class} #{e.message}"
         connect if @imap.disconnected? 
       end
     end
-    @avros.close
     @imap.disconnect
+    @avros.close
   end
   
   def avroize(email)
