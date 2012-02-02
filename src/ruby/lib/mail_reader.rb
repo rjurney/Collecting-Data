@@ -35,6 +35,7 @@ class MailReader
   def read
     connect if !@imap or @imap.disconnected?
     message_ids = @imap.search(['ALL']).reverse
+    @message_count = message_ids.size if @message_count == 0
     message_ids[0..@message_count].each do |message_id|
       # Fetch the message
       begin
