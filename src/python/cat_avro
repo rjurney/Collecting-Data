@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+#
+# derived from example at http://www.harshj.com/2010/04/25/writing-and-reading-avro-data-files-using-python/
+#
+from avro import schema, datafile, io
+import pprint
+import sys
+
+# Test reading avros
+rec_reader = io.DatumReader()
+
+# Create a 'data file' (avro file) reader
+df_reader = datafile.DataFileReader(
+  open(sys.argv[1]),
+  rec_reader
+)
+
+# Read all records stored inside
+pp = pprint.PrettyPrinter()
+for record in df_reader:
+  pp.pprint(record)
+

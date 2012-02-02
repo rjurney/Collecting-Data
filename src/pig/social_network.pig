@@ -19,7 +19,7 @@ DEFINE header_pairs(email, col1, col2) RETURNS pairs {
 }
 
 /* Get email address pairs for each type of connection, and union them together */
-emails = LOAD '/tmp/1000_emails.avro' USING AvroStorage();
+emails = LOAD '/tmp/russell.jurney@gmail.com/part-1' USING AvroStorage();
 from_to = header_pairs(emails, from, to);
 from_cc = header_pairs(emails, from, cc);
 from_bcc = header_pairs(emails, from, bcc);
