@@ -8,6 +8,8 @@ REGISTER /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
 REGISTER /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
 
 DEFINE AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
+DEFINE MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+
 rmf /tmp/social_network_edge_list.txt
 
 /* Filter emails according to existence of header pairs, from and [to, cc, bcc]
@@ -19,7 +21,7 @@ DEFINE header_pairs(email, col1, col2) RETURNS pairs {
 }
 
 /* Get email address pairs for each type of connection, and union them together */
-emails = LOAD '/tmp/russell.jurney@gmail.com/part-1' USING AvroStorage();
+emails = LOAD '/tmp/russell.jurney.gmail.com.avro' USING AvroStorage();
 from_to = header_pairs(emails, from, to);
 from_cc = header_pairs(emails, from, cc);
 from_bcc = header_pairs(emails, from, bcc);
@@ -30,4 +32,4 @@ pair_groups = GROUP pairs BY (ego1, ego2);
 sent_counts = FOREACH pair_groups GENERATE FLATTEN(group) AS (ego1, ego2), COUNT_STAR(pairs) AS total;
 
 STORE sent_counts INTO '/tmp/social_network_edge_list.txt';/* USING AvroStorage();
-STORE sent_counts INTO 'mongodb://localhost/test.pig' USING com.mongodb.hadoop.pig.MongoStorage; */
+STORE sent_counts INTO 'mongodb://localhost/test.pig' USING MongoStorage(); */

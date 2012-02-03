@@ -18,7 +18,7 @@ class MailReader
     @message_count = message_count.to_i
     @folder = '[Gmail]/All Mail'
     @directory = init_directory(directory)
-    @file_size = 1048576 #33554432 #32MB max
+    @file_size = 33554432 #32MB max
     trap_signals
   end
 

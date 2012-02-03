@@ -12,7 +12,7 @@ DEFINE MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
 rmf '/tmp/sent_counts.avro' /* Workaround for PIG-2441 */
 
-messages = LOAD '/tmp/10000_emails.avro' USING AvroStorage();
+messages = LOAD '/tmp/russell.jurney.gmail.com.avro' USING AvroStorage();
 messages = FILTER messages BY from IS NOT NULL AND to IS NOT NULL;
 
 smaller = FOREACH messages GENERATE from, to, subject;
