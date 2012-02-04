@@ -2,10 +2,11 @@
 
 require 'rubygems'
 require 'net/imap'
-require 'mail'
 require 'json'
 require 'avro'
+require 'pp'
 require 'unicode'
+require 'iconv'
 $KCODE = 'UTF-8'
 
 class MailReader
@@ -66,10 +67,11 @@ class MailReader
           @avros.close
           @avros = init_avro(file_counter)
         end
-        msg_string = @imap.fetch(message_id,'RFC822')[0].attr['RFC822']
-        email = Mail.new msg_string
-        avroize email
-        puts email.subject
+        # Net::IMAP::Envelope is small, and fast
+        envelope = @imap.fetch(message_id, 'ENVELOPE')[0].attr['ENVELOPE']
+        body = fetch_body(message_id)
+        avroize(envelope, body)
+        puts envelope.subject
       rescue Exception => e
         connect if @imap.disconnected? 
         puts "Exception parsing email: #{e.class} #{e.message} #{e.backtrace}}"
@@ -83,33 +85,75 @@ class MailReader
     @avros.close
   end
   
-  def avroize(email)
-    record = {}
-    ['message_id', 'to', 'cc', 'bcc', 'reply_to', 'subject'].each do |key|
-      record[key] = email.send(key) if email.send(key)
-      record[key] = convert_to_utf8(record[key])
-    end
-    ['from', 'date'].each do |key|
-      record[key] = email.send(key).to_s if email.send(key)
-      record[key] = convert_to_utf8(record[key])
+  def fetch_body(message_id)
+    body = @imap.fetch(message_id, "BODY")[0].attr["BODY"]
+    return nil unless body
+
+    not_utf = false
+    begin
+      not_utf = body['param']['CHARSET'] == "ISO-8859-1"
+      
+    rescue
+      not_utf = false
     end
     
-    # Must convert to UTF-8, or our Avros won't parse
-    record['body'] = email.body.encoded.toutf8
+    if body.multipart?
+      count = 1
+      text_parts = []
+      body.parts.each do |part|
+        if part.media_type == 'TEXT'
+          if part.subtype == 'PLAIN'
+            text_parts << @imap.fetch(message_id, "BODY[#{count}]")[0].attr.first[1]
+            count += 1
+          end
+        end
+      end
+      body_text = text_parts.join
+    else
+      body_text = @imap.fetch(message_id, "BODY[1]")[0].attr.first[1]
+      body_text = convert_to_utf8(body) if not_utf
+      body_text
+    end
+  end
+  
+  def avroize(envelope, body)
+    record = {}
+    
+    ['from', 'to', 'cc', 'bcc', 'reply_to'].each do |key|
+      if envelope.send(key)
+        record[key] = convert_to_utf8 emails_to_strings(envelope.send(key))
+      end
+    end
+    
+    ['message_id', 'subject', 'date'].each do |key|
+      if envelope.send(key)
+        record[key] = convert_to_utf8 envelope.send(key).to_s
+      end
+    end
+
+    record['body'] = body
     @avros << record
+  end
+  
+  # From Net::IMAP::Address to array of strings
+  def emails_to_strings(addresses)
+    if addresses && addresses.is_a?(Array)
+      addresses.map do |address|
+        "#{address.mailbox}@#{address.host}"
+      end
+    end
   end
   
   def convert_to_utf8(part)
     if part.is_a? String
-      part.toutf8
+      iconv part
     elsif part.is_a? Array
-      part.each {|p| p.toutf8}
+      part.map {|p| iconv p}
     end
   end
   
-  def convert_body(body)
-    c = Iconv.new('ISO-8859-1', 'UTF-8')
-    
+  def iconv(text)
+    converted_text = Iconv.conv('iso-8859-15', 'utf-8', text)
   end
   
   def connect
