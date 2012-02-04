@@ -9,6 +9,7 @@
         {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
         {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
         {"name":"reply_to", "type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"in_reply_to", "type": [{"type":"array", "items":"string"}, "null"]},
         {"name":"subject", "type": ["string", "null"]},
         {"name":"body", "type": ["string", "null"]},
         {"name":"date", "type": ["string", "null"]}

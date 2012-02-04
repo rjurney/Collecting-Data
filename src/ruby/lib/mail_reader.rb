@@ -119,7 +119,7 @@ class MailReader
   def avroize(envelope, body)
     record = {}
     
-    ['from', 'to', 'cc', 'bcc', 'reply_to'].each do |key|
+    ['from', 'to', 'cc', 'bcc', 'reply_to', 'in_reply_to'].each do |key|
       if envelope.send(key)
         record[key] = convert_to_utf8 emails_to_strings(envelope.send(key))
       end
@@ -157,10 +157,15 @@ class MailReader
   end
   
   def connect
-    @imap.close if @imap and @imap.respond_to? 'close'
-    @imap = Net::IMAP.new('imap.gmail.com', 993, true)
-    @imap.login(@email_address, @password)
-    @imap.examine(@folder) # examine is read only
+    begin
+      @imap.close if @imap and @imap.respond_to? 'close'
+    rescue IOError
+      puts "."
+    ensure
+      @imap = Net::IMAP.new('imap.gmail.com', 993, true)
+      @imap.login(@email_address, @password)
+      @imap.examine(@folder) # examine is read only
+    end
   end
 
 end
