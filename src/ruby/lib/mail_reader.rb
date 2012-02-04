@@ -11,7 +11,7 @@ $KCODE = 'UTF-8'
 
 class MailReader
 
-  attr_accessor :imap, :email_address, :password, :folder, :message_count, :avros, :directory, :current_filename
+  attr_accessor :imap, :email_address, :password, :folder, :message_count, :directory, :current_filename
   
   def initialize(email_address, password, message_count, directory)
     @email_address = email_address
@@ -32,8 +32,8 @@ class MailReader
     directory
   end
   
-  def init_avro(count)
-    @current_filename = "#{@directory}/part-#{count}.avro"
+  def init_avro(part_id)
+    @current_filename = "#{@directory}/part-#{part_id}.avro"
     file = File.open(@current_filename, 'wb')
     schema = Avro::Schema.parse IO.read(File.dirname(__FILE__) + '/../../avro/email.schema')
     writer = Avro::IO::DatumWriter.new(schema)
@@ -50,39 +50,47 @@ class MailReader
   
   def trap_signals
     # Trap ctrl-c
-    Signal.trap("SIGINT") { @imap.disconnect; @avros.close; break; exit }
+    Signal.trap("SIGINT") { @imap.disconnect; break; exit }
   end
   
   def read
-    file_counter = 0
-    @avros = init_avro(file_counter)
     connect if !@imap or @imap.disconnected?
-    message_ids = @imap.search(['ALL']).reverse
-    @message_count = message_ids.size if @message_count == 0
-    message_ids[0..@message_count].each do |message_id|
-      # Fetch the message
-      begin
-        if file_done
-          file_counter += 1
-          @avros.close
-          @avros = init_avro(file_counter)
+    all_message_ids = @imap.search(['ALL']).reverse
+    
+    id_slices = all_message_ids.each_slice(all_message_ids.size/2).to_a
+    
+    threads = []
+    id_slices.each_with_index do |message_ids, thread_id|
+      threads << Thread.new(message_ids, thread_id) do |message_ids, thread_id|
+        file_counter = 0
+        avros = init_avro("#{thread_id}-#{file_counter}")
+        message_ids[0..-1].each do |message_id|
+          # Fetch the message
+          begin
+            if file_done
+              file_counter += 1
+              avros.close
+              avros = init_avro(file_counter)
+            end
+            # Net::IMAP::Envelope is small, and fast
+            envelope = @imap.fetch(message_id, 'ENVELOPE')[0].attr['ENVELOPE']
+            body = fetch_body(message_id)
+            avroize(avros, envelope, body)
+            puts envelope.subject
+          rescue Exception => e
+            connect if @imap.disconnected? 
+            puts "Exception parsing email: #{e.class} #{e.message} #{e.backtrace}}"
+            next
+          rescue EOFError, IOError, Error => e
+            puts "Error with IMAP connection: #{e.class} #{e.message}"
+            connect if @imap.disconnected? 
+          end
         end
-        # Net::IMAP::Envelope is small, and fast
-        envelope = @imap.fetch(message_id, 'ENVELOPE')[0].attr['ENVELOPE']
-        body = fetch_body(message_id)
-        avroize(envelope, body)
-        puts envelope.subject
-      rescue Exception => e
-        connect if @imap.disconnected? 
-        puts "Exception parsing email: #{e.class} #{e.message} #{e.backtrace}}"
-        next
-      rescue EOFError, IOError, Error => e
-        puts "Error with IMAP connection: #{e.class} #{e.message}"
-        connect if @imap.disconnected? 
+      @imap.disconnect
+      avros.close
       end
     end
-    @imap.disconnect
-    @avros.close
+    threads.each { |a_thread|  a_thread.join }
   end
   
   def fetch_body(message_id)
@@ -116,7 +124,7 @@ class MailReader
     end
   end
   
-  def avroize(envelope, body)
+  def avroize(avros, envelope, body)
     record = {}
     
     ['from', 'to', 'cc', 'bcc', 'reply_to', 'in_reply_to'].each do |key|
@@ -132,7 +140,7 @@ class MailReader
     end
 
     record['body'] = body
-    @avros << record
+    avros << record
   end
   
   # From Net::IMAP::Address to array of strings
