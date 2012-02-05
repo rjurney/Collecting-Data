@@ -1,3 +1,5 @@
+/* Script purpose: extract edges with weights from email headers. */
+
 REGISTER /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
 REGISTER /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 REGISTER /me/pig/contrib/piggybank/java/piggybank.jar
@@ -21,7 +23,7 @@ DEFINE header_pairs(email, col1, col2) RETURNS pairs {
 }
 
 /* Get email address pairs for each type of connection, and union them together */
-emails = LOAD '/me/tmp/test_inbox' USING AvroStorage();
+emails = LOAD '/me/tmp/inbox' USING AvroStorage();
 from_to = header_pairs(emails, from, to);
 from_cc = header_pairs(emails, from, cc);
 from_bcc = header_pairs(emails, from, bcc);
@@ -31,5 +33,7 @@ pairs = UNION from_to, from_cc, from_bcc;
 pair_groups = GROUP pairs BY (ego1, ego2);
 sent_counts = FOREACH pair_groups GENERATE FLATTEN(group) AS (ego1, ego2), COUNT_STAR(pairs) AS total;
 
-STORE sent_counts INTO '/tmp/social_network_edge_list.txt';/* USING AvroStorage();
-STORE sent_counts INTO 'mongodb://localhost/test.pig' USING MongoStorage(); */
+/* Get in-degree, out-degree, then remove the direction on the links and get a degree. */
+
+/* STORE sent_counts INTO '/tmp/social_network_edge_list.txt'; USING AvroStorage(); */
+STORE sent_counts INTO 'mongodb://localhost/agile_data.sent_counts' USING MongoStorage();

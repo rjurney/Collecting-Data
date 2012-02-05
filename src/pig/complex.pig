@@ -12,16 +12,15 @@ DEFINE MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
 rmf '/tmp/sent_counts.avro' /* Workaround for PIG-2441 */
 
-messages = LOAD '/tmp/russell.jurney.gmail.com.avro' USING AvroStorage();
+messages = LOAD '/me/tmp/test_inbox' USING AvroStorage();
 messages = FILTER messages BY from IS NOT NULL AND to IS NOT NULL;
 
 smaller = FOREACH messages GENERATE from, to, subject;
-pairs = FOREACH smaller GENERATE from, FLATTEN(to) AS to:chararray, subject;
+pairs = FOREACH smaller GENERATE FLATTEN(from) as from, FLATTEN(to) AS to, subject;
 pairs = FOREACH pairs GENERATE LOWER(from) AS from, LOWER(to) AS to, subject;
 
 froms = GROUP pairs BY (from, to);
-sent_topics = FOREACH froms GENERATE FLATTEN(group) AS (from, to), pairs.subject AS pairs;
+sent_topics = FOREACH froms GENERATE FLATTEN(group) AS (from, to), 
+                                     pairs.subject AS pairs:bag {column:tuple (subject:chararray)};
 
--- STORE sent_topics INTO '/tmp/pair_titles.avro' USING AvroStorage();
--- Note: this fails as of now.  Working on a fix.
-STORE sent_topics INTO 'mongodb://localhost/test.pig' USING MongoStorage();
+STORE sent_topics INTO 'mongodb://localhost/test.pigola' USING MongoStorage();
