@@ -16,7 +16,7 @@ define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 rmf /tmp/sent_distributions.avro
 
 /* Get email address pairs for each type of connection, and union them together */
-emails = load '/me/tmp/test_inbox' using AvroStorage();
+emails = load '/me/tmp/inbox' using AvroStorage();
 
 filtered = filter emails BY (from is not null) and (date is not null);
 flat = foreach filtered generate flatten(from) as from, 

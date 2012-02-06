@@ -5,21 +5,23 @@ require 'net/imap'
 require 'json'
 require 'avro'
 require 'pp'
-require 'unicode'
+require 'date'
+#require 'unicode'
 require 'iconv'
 $KCODE = 'UTF-8'
 
 class MailReader
 
-  attr_accessor :imap, :email_address, :password, :folder, :message_count, :directory, :current_filename
+  attr_accessor :imap, :email_address, :password, :folder, :message_count, :directory, :current_filename, :thread_count
   
-  def initialize(email_address, password, message_count, directory)
+  def initialize(email_address, password, thread_count, directory)
     @email_address = email_address
     @password = password
     @message_count = message_count.to_i
     @folder = '[Gmail]/All Mail'
     @directory = init_directory(directory)
     @file_size = 33554432 #32MB max
+    @thread_count = thread_count.to_i
     trap_signals
   end
 
@@ -57,11 +59,13 @@ class MailReader
     connect if !@imap or @imap.disconnected?
     all_message_ids = @imap.search(['ALL']).reverse
     
-    id_slices = all_message_ids.each_slice(all_message_ids.size/2).to_a
+    id_slices = all_message_ids.each_slice(all_message_ids.size/@thread_count).to_a
+    puts "Spawning #{id_slices.size} threads to scrape IMAP..."
     
     threads = []
     id_slices.each_with_index do |message_ids, thread_id|
       threads << Thread.new(message_ids, thread_id) do |message_ids, thread_id|
+        puts "Worker #{thread_id} booting imap..."
         file_counter = 0
         avros = init_avro("#{thread_id}-#{file_counter}")
         message_ids[0..-1].each do |message_id|
@@ -70,20 +74,21 @@ class MailReader
             if file_done
               file_counter += 1
               avros.close
-              avros = init_avro(file_counter)
+              avros = init_avro("#{thread_id}-#{file_counter}")
+              file_counter += 1
             end
             # Net::IMAP::Envelope is small, and fast
             envelope = @imap.fetch(message_id, 'ENVELOPE')[0].attr['ENVELOPE']
             body = fetch_body(message_id)
             avroize(avros, envelope, body)
-            puts envelope.subject
+            puts "#{thread_id}: #{envelope.subject}"
           rescue Exception => e
             connect if @imap.disconnected? 
             puts "Exception parsing email: #{e.class} #{e.message} #{e.backtrace}}"
             next
           rescue EOFError, IOError, Error => e
-            puts "Error with IMAP connection: #{e.class} #{e.message}"
             connect if @imap.disconnected? 
+            puts "Error with IMAP connection: #{e.class} #{e.message}"
           end
         end
       @imap.disconnect
@@ -133,11 +138,14 @@ class MailReader
       end
     end
     
-    ['message_id', 'subject', 'date'].each do |key|
+    ['message_id', 'subject'].each do |key|
       if envelope.send(key)
         record[key] = convert_to_utf8 envelope.send(key).to_s
       end
     end
+    
+    # Parse and convert to ISO format
+    record['date'] = convert_to_utf8 DateTime.parse(envelope.date).to_s
 
     record['body'] = body
     avros << record

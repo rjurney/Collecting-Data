@@ -2,9 +2,8 @@ source :rubygems
 
 gem "json"
 gem "avro"
-gem "mail"
-gem "ruby-gmail"
 # gem "aws-s3", :require => "aws/s3"
 gem "yajl-ruby", :require => "yajl"
 gem "mongo"
 gem "sinatra"
+gem "iconv"
