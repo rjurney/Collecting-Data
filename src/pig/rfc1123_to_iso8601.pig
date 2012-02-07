@@ -10,16 +10,20 @@ register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 define CustomFormatToISO org.apache.pig.piggybank.evaluation.datetime.convert.CustomFormatToISO();
+define ForgivingCustomFormatToISO org.apache.pig.piggybank.evaluation.datetime.convert.CustomFormatToISO();
 define substr org.apache.pig.piggybank.evaluation.string.SUBSTRING();
 define tohour org.apache.pig.piggybank.evaluation.datetime.truncate.ISOToHour();
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+
+import 'macros.pig';
+set aggregate.warning 'true';
 
 rmf /tmp/sent_distributions.avro
 
 /* Get email address pairs for each type of connection, and union them together */
 emails = load '/me/tmp/again_inbox' using AvroStorage();
+filtered = filter emails by (from is not null) and (date is not null);
 
-filtered = filter emails BY (from is not null) and (date is not null);
 flat = foreach filtered generate flatten(from) as from, 
                                  substr(tohour(date), 11, 13) as sent_hour;  
                

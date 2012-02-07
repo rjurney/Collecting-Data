@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'avro'
+require 'pp'
+
+# read all data from avro file
+puts ARGV[0]
+file = File.open(ARGV[0], 'r+')
+dr = Avro::DataFile::Reader.new(file, Avro::IO::DatumReader.new)
+count = 0
+dr.each do |record|
+  puts count
+  count += 1
+end

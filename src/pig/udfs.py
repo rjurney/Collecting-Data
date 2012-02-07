@@ -24,4 +24,5 @@ def concat(str):
 
 def hour(iso_string):
   tuple_time = time.strptime(iso_string, "%Y-%m-%dT%H:%M:%S")
-  return str(tuple_time.tm_hour)
+  return str(tuple_time[2])
+
