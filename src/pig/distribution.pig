@@ -16,7 +16,6 @@ define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
 rmf /tmp/sent_distributions.avro
 
-/* Get email address pairs for each type of connection, and union them together */
 emails = load '/me/tmp/again_inbox' using AvroStorage();
 
 filtered = filter emails BY (from is not null) and (date is not null);
@@ -27,13 +26,13 @@ pairs = foreach flat generate LOWER(from) as email,
                               sent_hour;
 
 sent_times = foreach (group pairs by (email, sent_hour)) generate flatten(group) as (email, sent_hour), 
-                                                                  (chararray)COUNT(pairs) as total;
+                                                                  (int)COUNT(pairs) as total;
 
 /* Note the use of a sort inside a foreach block */
 sent_distributions = foreach (group sent_times by email) { 
                                                           solid = filter sent_times by (sent_hour is not null) and (total is not null);
                                                           sorted = ORDER solid by sent_hour;
-                                                          generate group as email, sorted.(sent_hour, total) as sent_dist:bag {column:tuple (sent_hour:chararray, total:chararray)}; 
+                                                          generate group as email, sorted.(sent_hour, total) as sent_dist; 
                                                         };
 
 store sent_distributions into '/tmp/sent_distributions.avro' USING AvroStorage();

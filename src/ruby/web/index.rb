@@ -3,8 +3,10 @@ require 'sinatra'
 require 'sinatra/mongo'
 require 'json'
 require 'erb'
+require 'pp'
 
 set :mongo, 'mongo://localhost/agile_data'
+set :erb, :trim => '-'
 
 get '/' do
   erb :index
@@ -18,4 +20,10 @@ end
 get '/to_from_subject' do
   @data = mongo['to_from_subject'].find()
   erb :'partials/read_write_emails'
+end
+
+get '/sent_distributions/:email' do |@email|
+  @data = mongo['sentdist'].find_one({:email => @email})['sent_dist']
+  @json = JSON @data
+  erb :'partials/distribution'
 end
