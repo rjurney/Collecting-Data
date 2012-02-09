@@ -4,6 +4,8 @@ GEM
     avro (1.6.1)
       yajl-ruby
     bson (1.5.2)
+    bson_ext (1.5.2)
+      bson (= 1.5.2)
     iconv (0.1)
     json (1.6.3)
     mongo (1.5.2)
@@ -28,6 +30,7 @@ PLATFORMS
 
 DEPENDENCIES
   avro
+  bson_ext
   iconv
   json
   mongo

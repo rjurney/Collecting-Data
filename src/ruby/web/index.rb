@@ -37,7 +37,6 @@ get '/sent_distributions/:email' do |@email|
   puts JSON raw_data
   @data = (0..23).map do |hour|
     key = to_key(hour)
-    puts "Key: |#{key}|"
     value = Integer  
     index = raw_data.find_index{ |record| record['sent_hour'] == key }
     if index
@@ -45,12 +44,10 @@ get '/sent_distributions/:email' do |@email|
     else
       value = 0
     end
-    puts "{'sent_hour': #{key}, 'total': #{value}}"
     {'sent_hour' => key, 'total' => value}
   end
 
   @json = JSON @data
-  puts @json
   erb :'partials/distribution'
 end
 

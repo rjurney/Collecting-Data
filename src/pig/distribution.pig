@@ -14,26 +14,39 @@ define substr org.apache.pig.piggybank.evaluation.string.SUBSTRING();
 define tohour org.apache.pig.piggybank.evaluation.datetime.truncate.ISOToHour();
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
+define extract_time(relation, field_in, field_out) RETURNS times {
+  $times = foreach $relation generate flatten($field_in) as $field_out,
+                             substr(tohour(date), 11, 13) as sent_hour;
+};
+
 rmf /tmp/sent_distributions.avro
 
 emails = load '/me/tmp/again_inbox' using AvroStorage();
-
 filtered = filter emails BY (from is not null) and (date is not null);
-flat = foreach filtered generate flatten(from) as from, 
-                                 substr(tohour(date), 11, 13) as sent_hour;  
-               
-pairs = foreach flat generate LOWER(from) as email, 
-                              sent_hour;
+
+/* Some emails that users send to have no from entries, list email lists.  These addresses
+   have reply_to's associated with them.  Here we split reply_to processing off to ensure
+   reply_to addresses get credit for sending emails. */
+split filtered into has_reply_to if (reply_to is not null), froms if (reply_to is null);
+
+/* For emails with a reply_to, count both the from and the reply_to as a sender. */
+reply_to = extract_time(has_reply_to, reply_to, from);
+reply_to_froms = extract_time(has_reply_to, from, from);
+froms = extract_time(froms, from, from);
+all_froms = union reply_to, reply_to_froms, froms;
+
+pairs = foreach all_froms generate LOWER(from) as email, 
+                                   sent_hour;
 
 sent_times = foreach (group pairs by (email, sent_hour)) generate flatten(group) as (email, sent_hour), 
                                                                   (int)COUNT(pairs) as total;
 
 /* Note the use of a sort inside a foreach block */
 sent_distributions = foreach (group sent_times by email) { 
-                                                          solid = filter sent_times by (sent_hour is not null) and (total is not null);
-                                                          sorted = ORDER solid by sent_hour;
-                                                          generate group as email, sorted.(sent_hour, total) as sent_dist; 
+    solid = filter sent_times by (sent_hour is not null) and (total is not null);
+    sorted = ORDER solid by sent_hour;
+    generate group as email, sorted.(sent_hour, total) as sent_dist;
                                                         };
-
+                                                        
 store sent_distributions into '/tmp/sent_distributions.avro' USING AvroStorage();
 store sent_distributions into 'mongodb://localhost/agile_data.sentdist' using MongoStorage();

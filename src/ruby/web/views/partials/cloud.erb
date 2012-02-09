@@ -1,5 +1,5 @@
-<div class="btn-group">
+<p>
   <% @data.each do |d| -%>
-    <a href="/sent_distributions/<%= d['to'] -%>" class=".btn"><%= d['to'] -%></a>
+    <a style="margin: 3px;" class="btn info" href="/sent_distributions/<%= d['to'] -%>"><%= d['to'] -%></a>
   <% end -%>
-</div>
+</p>
