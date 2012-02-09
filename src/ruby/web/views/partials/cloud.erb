@@ -1,0 +1,5 @@
+<div class="btn-group">
+  <% @data.each do |d| -%>
+    <a href="/sent_distributions/<%= d['to'] -%>" class=".btn"><%= d['to'] -%></a>
+  <% end -%>
+</div>

@@ -8,6 +8,16 @@ require 'pp'
 set :mongo, 'mongo://localhost/agile_data'
 set :erb, :trim => '-'
 
+helpers do
+  def to_key(hour)
+    if hour < 10
+      "0" + hour.to_s
+    else
+      hour.to_s
+    end
+  end
+end
+
 get '/' do
   erb :index
 end
@@ -24,24 +34,27 @@ end
 
 get '/sent_distributions/:email' do |@email|
   raw_data = mongo['sentdist'].find_one({:email => @email})['sent_dist']
+  puts JSON raw_data
   @data = (0..23).map do |hour|
-    key = String.new
-    if hour < 10
-      key = "0" + hour.to_s
-    else
-      key = hour.to_s
-    end
-    
+    key = to_key(hour)
+    puts "Key: |#{key}|"
     value = Integer  
-    if raw_data[hour] and raw_data[hour]['total']
-      value = raw_data[hour]['total']
+    index = raw_data.find_index{ |record| record['sent_hour'] == key }
+    if index
+      value = raw_data[index]['total']
     else
       value = 0
     end
+    puts "{'sent_hour': #{key}, 'total': #{value}}"
     {'sent_hour' => key, 'total' => value}
   end
 
   @json = JSON @data
   puts @json
   erb :'partials/distribution'
+end
+
+get '/top_friends/:email' do |@email|
+  @data = mongo['top_friends'].find_one({:email => @email})['top_20']
+  erb :'partials/cloud'
 end
