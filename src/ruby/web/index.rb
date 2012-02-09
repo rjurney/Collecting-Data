@@ -23,7 +23,25 @@ get '/to_from_subject' do
 end
 
 get '/sent_distributions/:email' do |@email|
-  @data = mongo['sentdist'].find_one({:email => @email})['sent_dist']
+  raw_data = mongo['sentdist'].find_one({:email => @email})['sent_dist']
+  @data = (0..23).map do |hour|
+    key = String.new
+    if hour < 10
+      key = "0" + hour.to_s
+    else
+      key = hour.to_s
+    end
+    
+    value = Integer  
+    if raw_data[hour] and raw_data[hour]['total']
+      value = raw_data[hour]['total']
+    else
+      value = 0
+    end
+    {'sent_hour' => key, 'total' => value}
+  end
+
   @json = JSON @data
+  puts @json
   erb :'partials/distribution'
 end
