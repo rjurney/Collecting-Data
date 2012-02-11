@@ -112,16 +112,16 @@ class MailReader
     
     if body.multipart?
       count = 1
-      text_parts = []
+      body_text = []      
       body.parts.each do |part|
         if part.media_type == 'TEXT'
           if part.subtype == 'PLAIN'
-            text_parts << @imap.fetch(message_id, "BODY[#{count}]")[0].attr.first[1]
-            count += 1
+            body_text << @imap.fetch(message_id, "BODY[#{count}]")[0].attr.first[1]
+            break
           end
         end
       end
-      body_text = text_parts.join
+      body_text = convert_to_utf8(body_text) if not_utf
     else
       body_text = @imap.fetch(message_id, "BODY[1]")[0].attr.first[1]
       body_text = convert_to_utf8(body) if not_utf

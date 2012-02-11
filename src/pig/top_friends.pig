@@ -1,14 +1,14 @@
-REGISTER /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
-REGISTER /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
-REGISTER /me/pig/contrib/piggybank/java/piggybank.jar
-REGISTER /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
-REGISTER /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
-REGISTER /me/mongo-hadoop/mongo-2.3.jar
-REGISTER /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
-REGISTER /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
+register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
+register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
+register /me/pig/contrib/piggybank/java/piggybank.jar
+register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
+register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
+register /me/mongo-hadoop/mongo-2.3.jar
+register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
+register /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
 
-DEFINE AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
-DEFINE MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
 import 'macros.pig';
 set aggregate.warning 'true';

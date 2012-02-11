@@ -12,7 +12,7 @@ REGISTER /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
 DEFINE AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 DEFINE MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
-rmf /tmp/social_network_edge_list.txt
+rmf /tmp/social_network_edge_list.avro
 
 /* Filter emails according to existence of header pairs, from and [to, cc, bcc]
 project the pairs (may be more than one to/cc/bcc), then emit them, lowercased. */
@@ -34,6 +34,5 @@ pair_groups = GROUP pairs BY (ego1, ego2);
 sent_counts = FOREACH pair_groups GENERATE FLATTEN(group) AS (ego1, ego2), COUNT_STAR(pairs) AS total;
 
 /* Get in-degree, out-degree, then remove the direction on the links and get a degree. */
-
-/* STORE sent_counts INTO '/tmp/social_network_edge_list.txt'; USING AvroStorage(); */
+STORE sent_counts INTO '/tmp/social_network_edge_list.avro'; USING AvroStorage();
 STORE sent_counts INTO 'mongodb://localhost/agile_data.sent_counts' USING MongoStorage();

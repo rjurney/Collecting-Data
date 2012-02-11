@@ -16,14 +16,20 @@ helpers do
       hour.to_s
     end
   end
+  
+  def mongo_fetch_one(collection, query)
+    begin
+      data = mongo[collection].find_one(query)
+    rescue
+      puts "Problem fetching #{query} from #{collection}!"
+    end
+  end
 end
 
-get '/' do
-  erb :index
-end
+get '/' do redirect '/top_friends/russell.jurney@gmail.com' end
 
 get '/sent_counts/:from/:to' do |from, to|
-  @data = mongo['sent_counts'].find_one({:from => from, :to => to})
+  @data = mongo_fetch_one('sent_counts', {:from => from, :to => to})
   erb :'partials/table'
 end
 
@@ -33,8 +39,8 @@ get '/to_from_subject' do
 end
 
 get '/sent_distributions/:email' do |@email|
-  raw_data = mongo['sentdist'].find_one({:email => @email})['sent_dist']
-  puts JSON raw_data
+  raw_data = mongo_fetch_one('sentdist', {:email => @email})['sent_dist']
+
   @data = (0..23).map do |hour|
     key = to_key(hour)
     value = Integer  
@@ -46,12 +52,14 @@ get '/sent_distributions/:email' do |@email|
     end
     {'sent_hour' => key, 'total' => value}
   end
-
   @json = JSON @data
+  
+  # Also include friends
+  @friends = mongo_fetch_one('top_friends', {:email => @email})['top_20']
   erb :'partials/distribution'
 end
 
 get '/top_friends/:email' do |@email|
-  @data = mongo['top_friends'].find_one({:email => @email})['top_20']
+  @friends = mongo_fetch_one('top_friends', {:email => @email})['top_20']
   erb :'partials/cloud'
 end

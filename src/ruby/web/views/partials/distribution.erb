@@ -28,12 +28,26 @@
       </tbody>
     </table>
   </div>
-  <div id="d3div" class="span6" style="color: white;"></div>
+
+  <div id="d3div" class="span6" style="color: white;">
+
+  </div>
+  <div class="span6">
+  <ul class="nav nav-pills">
+    <% @friends[0..5].each do |d| -%>
+    <li class="active">
+      <a href="/sent_distributions/<%= d['to'] -%>"><%= d['to'] -%></a>
+    </li>
+    <% end -%>
+  </ul>
+  </div>
 </div>
+
+
 
 <script type="text/javascript">
 var data = <%= @json -%>;
-var w = 20, h = 615;
+var w = 20, h = 465;
 
 // Max is used to map our values to the Y axis
 var max = d3.max(data, function(d) { return d['total']; });

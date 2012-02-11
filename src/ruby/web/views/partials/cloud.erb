@@ -1,5 +1,8 @@
-<p>
-  <% @data.each do |d| -%>
-    <a style="margin: 3px;" class="btn info" href="/sent_distributions/<%= d['to'] -%>"><%= d['to'] -%></a>
+<h2 style="margin-bottom: 5px;">Some friends to get you started...</h2>
+<ul class="nav nav-pills">
+  <% @friends.each do |d| -%>
+  <li class="active">
+    <a style="margin: 3px;" href="/sent_distributions/<%= d['to'] -%>"><%= d['to'] -%></a>
+  </li>
   <% end -%>
-</p>
+</ul>
