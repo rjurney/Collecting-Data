@@ -3,9 +3,9 @@ register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/contrib/piggybank/java/piggybank.jar
 register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
-register /me/mongo-hadoop/mongo-2.3.jar
-register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
-register /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
+register /me/mongo-hadoop/mongo-2.7.2.jar
+register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0-rc0.jar
+register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0-rc0.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
@@ -49,4 +49,5 @@ sent_distributions = foreach (group sent_times by email) {
                                                         };
                                                         
 store sent_distributions into '/tmp/sent_distributions.avro' USING AvroStorage();
-store sent_distributions into 'mongodb://localhost/agile_data.sentdist' using MongoStorage();
+-- store sent_distributions into 'mongodb://localhost/agile_data.sent_dist' using MongoStorage();
+store sent_distributions into 'mongodb://$user:$password@polarbear.member1.mongohq.com:10004/agile_data.sent_dist' using MongoStorage();
