@@ -3,14 +3,10 @@ register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/contrib/piggybank/java/piggybank.jar
 register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
-register /me/mongo-hadoop/mongo-2.3.jar
-register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
-register /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
-import 'macros.pig';
 set aggregate.warning 'true';
 
 rmf /tmp/top_friends.avro
@@ -31,4 +27,3 @@ top_pairs = foreach (group counts by from) {
 }
 
 store top_pairs into '/tmp/top_friends.avro' using AvroStorage();
-store top_pairs into 'mongodb://localhost/agile_data.top_friends' using MongoStorage();

@@ -19,7 +19,7 @@ DEFINE test_filter(original, condition) RETURNS result {
 /* Given a document relation with a text column and a unique id column, 
    count the number of times each word occurs in each document, and divide that by
    the occurrence of the word among all documents */
-DEFINE tf_idf(document, text_col, id_col) RETURNS scores_per_document {
+/*DEFINE tf_idf(document, text_col, id_col) RETURNS scores_per_document {
   chunks = foreach $document generate id_col, flatten(TOKENIZE(LOWER(text_col))) as word;
 };
 
@@ -37,8 +37,8 @@ document_frequency = foreach (group per_document by word) generate group as word
 
 -- Now group words by from and get a word count per email
 term_frequency = foreach (group words by (from, word)) generate flatten(group) as (from, word), (int)COUNT(words) as term_total;
-
--- bring the term and document frequencies together 
+*/
+/*-- bring the term and document frequencies together 
 together = join term_frequency BY word, document_frequency by word;
 tf_idf = foreach together generate from as from, 
                                    term_frequency::word as word, 
@@ -53,5 +53,5 @@ top_20 = foreach (group tf_idf by from) {
 
 -- store in avro format, and publish to mongodb
 STORE top_20 INTO '/tmp/ngrams.avro' USING AvroStorage();
-STORE top_20 INTO 'mongodb://localhost/agile_data.top_terms_per_sender' USING MongoStorage();
+STORE top_20 INTO 'mongodb://localhost/agile_data.top_terms_per_sender' USING MongoStorage();*/
 

@@ -3,7 +3,7 @@ register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/contrib/piggybank/java/piggybank.jar
 register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
-register /me/mongo-hadoop/mongo-2.7.2.jar
+register /me/mongo-hadoop/mongo-2.7.3.jar
 register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0-rc0.jar
 register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0-rc0.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
@@ -21,6 +21,7 @@ define extract_time(relation, field_in, field_out) RETURNS times {
 
 rmf /tmp/sent_distributions.avro
 
+emails = load 's3://agile.data/again_inbox' using AvroStorage();
 emails = load '/me/tmp/again_inbox' using AvroStorage();
 filtered = filter emails BY (from is not null) and (date is not null);
 

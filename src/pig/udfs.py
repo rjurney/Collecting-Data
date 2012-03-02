@@ -41,3 +41,11 @@ def word_count_subjects(group, subjects):
       word_counts[word] = word_counts.get(word, 0) + 1
   return to, _from, sorted(word_counts.items(), key=lambda word_count: word_count[1], reverse=True)
 
+@outputSchema("bag:{t2:(word:chararray, total:int)}")
+def bag_test(group, subjects):
+  word_counts = {}
+  for subject in subjects:
+    words = subject[0].split()
+    for word in words:
+      word_counts[word] = word_counts.get(word, 0) + 1
+  return sorted(word_counts.items(), key=lambda word_count: word_count[1], reverse=True)
