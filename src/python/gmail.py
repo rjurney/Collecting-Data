@@ -56,7 +56,6 @@ def parse_addrs(addr_string):
 def parse_date(date_string):
   tuple_time = email.utils.parsedate(date_string)
   iso_time = time.strftime("%Y-%m-%dT%H:%M:%S", tuple_time)
-  print("iso_time: " + iso_time)
   return iso_time
 
 def process_email(msg):
@@ -67,21 +66,18 @@ def process_email(msg):
     'cc': parse_addrs(msg['Cc']),
     'bcc': parse_addrs(msg['Bcc']),
     'reply_to': parse_addrs(msg['Reply-To']),
-    'in_reply_to': msg['In-Reply-To'],
+    'in_reply_to': parse_addrs(msg['In-Reply-To']),
     'subject': msg['Subject'],
     'date': parse_date(msg['Date']),
     'body': get_body(msg)
   }
-  print(avro_parts)
   return avro_parts
 
 def get_body(msg):
   body = ''
   if msg:
     for part in msg.walk():
-      print part.get_content_type()
       if part.get_content_type() == 'text/plain':
-        print part.get_payload()
         body += part.get_payload()
   return body
 
@@ -100,11 +96,15 @@ pp = pprint.PrettyPrinter(indent=4)
 
 avro_writer = init_avro(output_dir, 1, schema_path)
 imap, count = init_imap(username, password, imap_folder)
-email_hash = fetch_email(imap, '5')
-avro_writer.append(email_hash)
+max = int(count[0])
+ids = range(1,max)
+ids.reverse()
+for id in ids:
+  email_hash = fetch_email(imap, str(id))
+  avro_writer.append(email_hash)
+  print str(id) + ": " + email_hash['subject']
 avro_writer.close()
 
 imap.close()
 imap.logout()
-
 
