@@ -15,6 +15,12 @@ def init_directory(directory):
     os.makedirs(directory)
   return directory
 
+def init_imap(username, password, folder):
+  imap = imaplib.IMAP4_SSL('imap.gmail.com', 993)
+  imap.login(username, password)
+  status, count = imap.select(folder)
+  return imap, count
+
 def init_avro(output_dir, part_id, schema_path):
   out_filename = '%(output_dir)s/part-%(part_id)s.avro' % \
     {"output_dir": output_dir, "part_id": str(part_id)}
@@ -47,22 +53,21 @@ def parse_addrs(addr_string):
     address = addr_string
   return address
 
-def process_email(msg):  
+def process_email(msg):
   avro_parts = {
-    'message_id': parse_addrs(msg['Message-ID']),
+    'message_id': msg['Message-ID'],
     'from': parse_addrs(msg['From']),
     'to': parse_addrs(msg['To']),
     'cc': parse_addrs(msg['Cc']),
     'bcc': parse_addrs(msg['Bcc']),
     'reply_to': parse_addrs(msg['Reply-To']),
-    'in_reply_to': parse_addrs(msg['In-Reply-To']),
-    'subject': parse_addrs(msg['Subject']),
-    'date': parse_addrs(msg['Date'])
+    'in_reply_to': msg['In-Reply-To'],
+    'subject': msg['Subject'],
+    'date': msg['Date'],
+    'body': 'Hi'
   }
+  
   return avro_parts
-
-def write_email(writer, email):
-  writer.append(email)
 
 def walk_msg(msg):
   for part in msg.walk():
@@ -75,20 +80,16 @@ if (len(sys.argv) < 4):
   print """Usage: gmail.py <username@gmail.com> <password> <output_directory>"""
   exit(0)
 
-user_name = sys.argv[1]
+username = sys.argv[1]
 password = sys.argv[2]
-directory = init_directory(sys.argv[3])
+output_dir = init_directory(sys.argv[3])
+imap_folder = '[Gmail]/All Mail'
+schema_path = '/me/Collecting-Data/src/avro/email.schema'
 
 pp = pprint.PrettyPrinter(indent=4)
 
-schema_path = '/me/Collecting-Data/src/avro/email.schema'
 avro_writer = init_avro(output_dir, 1, schema_path)
-imap_folder = '[Gmail]/All Mail'
-
-imap = imaplib.IMAP4_SSL('imap.gmail.com', 993)
-imap.login(user_name,password)
-status, count = imap.select(imap_folder)
-
+imap, count = init_imap(username, password, imap_folder)
 email_hash = fetch_email(imap, '5')
 avro_writer.append(email_hash)
 avro_writer.close()
