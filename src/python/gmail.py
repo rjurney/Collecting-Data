@@ -7,6 +7,7 @@ import os
 import email
 import inspect
 import pprint
+import time
 
 def init_directory(directory):
   if os.path.exists(directory):
@@ -38,7 +39,6 @@ def fetch_email(imap, id):
   status, data = imap.fetch(id, '(RFC822)')
   raw_email = data[0][1]
   msg = email.message_from_string(raw_email)
-  text_parts = walk_msg(msg)
   avro_parts = process_email(msg)
   return avro_parts
 
@@ -53,6 +53,12 @@ def parse_addrs(addr_string):
     address = addr_string
   return address
 
+def parse_date(date_string):
+  tuple_time = email.utils.parsedate(date_string)
+  iso_time = time.strftime("%Y-%m-%dT%H:%M:%S", tuple_time)
+  print("iso_time: " + iso_time)
+  return iso_time
+
 def process_email(msg):
   avro_parts = {
     'message_id': msg['Message-ID'],
@@ -63,17 +69,21 @@ def process_email(msg):
     'reply_to': parse_addrs(msg['Reply-To']),
     'in_reply_to': msg['In-Reply-To'],
     'subject': msg['Subject'],
-    'date': msg['Date'],
-    'body': 'Hi'
+    'date': parse_date(msg['Date']),
+    'body': get_body(msg)
   }
-  
+  print(avro_parts)
   return avro_parts
 
-def walk_msg(msg):
-  for part in msg.walk():
-    if part.get_content_type() == "multipart/alternative":
-      continue
-    yield part.get_payload(decode=1)
+def get_body(msg):
+  body = ''
+  if msg:
+    for part in msg.walk():
+      print part.get_content_type()
+      if part.get_content_type() == 'text/plain':
+        print part.get_payload()
+        body += part.get_payload()
+  return body
 
 # MAIN
 if (len(sys.argv) < 4):
