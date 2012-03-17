@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import imaplib
-import sys
+import sys, signal
 from avro import schema, datafile, io
 import os
 import email
@@ -36,11 +36,28 @@ def init_avro(output_dir, part_id, schema_path):
   return df_writer
 
 def fetch_email(imap, id):
-  status, data = imap.fetch(id, '(RFC822)')
-  raw_email = data[0][1]
-  msg = email.message_from_string(raw_email)
-  avro_parts = process_email(msg)
-  return avro_parts
+  
+  def timeout_handler(signum, frame):
+    raise TimeoutException()
+  
+  signal.signal(signal.SIGALRM, timeout_handler) 
+  signal.alarm(3) # triger alarm in 3 seconds
+  
+  avro_parts = {}
+  status = 'FAIL'
+  try:
+    status, data = imap.fetch(id, '(RFC822)')
+  except TimeoutException:
+    return 'TIMEOUT', {}
+  except imap.abort, e:
+    return 'ABORT', {}
+  if status != 'OK':
+    return 'ERROR', {}
+  else:
+    raw_email = data[0][1]
+    msg = email.message_from_string(raw_email)
+    avro_parts = process_email(msg)
+  return status, avro_parts
 
 def parse_addrs(addr_string):
   if addr_string:
@@ -49,9 +66,7 @@ def parse_addrs(addr_string):
     for a in ads:
       final.append(a[1])
     address = final
-  else:
-    address = addr_string
-  return address
+    return address
 
 def parse_date(date_string):
   tuple_time = email.utils.parsedate(date_string)
@@ -78,8 +93,12 @@ def get_body(msg):
   if msg:
     for part in msg.walk():
       if part.get_content_type() == 'text/plain':
-        body += part.get_payload()
+        body += unicode(part.get_payload(), errors='ignore')
   return body
+
+class TimeoutException(Exception): 
+  """Indicates an operation timed out."""
+  pass
 
 # MAIN
 if (len(sys.argv) < 4):
@@ -99,12 +118,19 @@ imap, count = init_imap(username, password, imap_folder)
 max = int(count[0])
 ids = range(1,max)
 ids.reverse()
-for id in ids:
-  email_hash = fetch_email(imap, str(id))
-  avro_writer.append(email_hash)
-  print str(id) + ": " + email_hash['subject']
-avro_writer.close()
 
+for id in ids:
+  status, email_hash = fetch_email(imap, str(id))
+  if(status == 'OK'):
+    avro_writer.append(email_hash)
+    if email_hash['subject']:
+      print str(id) + ": " + email_hash['subject']
+    else:
+      print "No Subject"
+  else:
+    imap, count = init_imap(username, password, imap_folder)
+
+avro_writer.close()
 imap.close()
 imap.logout()
 
