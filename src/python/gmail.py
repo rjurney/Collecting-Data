@@ -17,6 +17,10 @@ def init_directory(directory):
   return directory
 
 def init_imap(username, password, folder):
+  try:
+    imap.shutdown()
+  except:
+    pass
   imap = imaplib.IMAP4_SSL('imap.gmail.com', 993)
   imap.login(username, password)
   status, count = imap.select(folder)
@@ -41,7 +45,7 @@ def fetch_email(imap, id):
     raise TimeoutException()
   
   signal.signal(signal.SIGALRM, timeout_handler) 
-  signal.alarm(3) # triger alarm in 3 seconds
+  signal.alarm(30) # triger alarm in 30 seconds
   
   avro_parts = {}
   status = 'FAIL'
@@ -51,12 +55,19 @@ def fetch_email(imap, id):
     return 'TIMEOUT', {}
   except imap.abort, e:
     return 'ABORT', {}
+  
   if status != 'OK':
     return 'ERROR', {}
   else:
     raw_email = data[0][1]
+  try:
     msg = email.message_from_string(raw_email)
     avro_parts = process_email(msg)
+  except UnicodeDecodeError:
+    return 'UNICODE', {}
+  except:
+    return 'PARSE', {}
+  
   return status, avro_parts
 
 def parse_addrs(addr_string):
@@ -93,7 +104,7 @@ def get_body(msg):
   if msg:
     for part in msg.walk():
       if part.get_content_type() == 'text/plain':
-        body += unicode(part.get_payload(), errors='ignore')
+        body += unicode(part.get_payload().encode('utf-8'), errors='ignore')
   return body
 
 class TimeoutException(Exception): 
@@ -109,7 +120,7 @@ username = sys.argv[1]
 password = sys.argv[2]
 output_dir = init_directory(sys.argv[3])
 imap_folder = '[Gmail]/All Mail'
-schema_path = '/me/Collecting-Data/src/avro/email.schema'
+schema_path = 'email.schema'
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -122,13 +133,27 @@ ids.reverse()
 for id in ids:
   status, email_hash = fetch_email(imap, str(id))
   if(status == 'OK'):
-    avro_writer.append(email_hash)
+    try:
+        avro_writer.append(email_hash)
+    except UnicodeDecodeError:
+        sys.stderr.write('AVRO')
     if email_hash['subject']:
       print str(id) + ": " + email_hash['subject']
     else:
       print "No Subject"
-  else:
+  elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE'):
+    sys.stderr.write(status + "\n")
+    continue
+  elif (status == 'ABORT' or status == 'TIMEOUT'):
+    sys.stderr.write("resetting imap for " + status + "\n")
+    try:
+      imap.close()
+      imap.logout()
+    except:
+      pass
     imap, count = init_imap(username, password, imap_folder)
+  else:
+    continue
 
 avro_writer.close()
 imap.close()

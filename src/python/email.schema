@@ -1,0 +1,17 @@
+{
+    "namespace": "agile.data.avro",
+    "name": "Email",
+    "type": "record",
+    "fields": [
+        {"name":"message_id", "type": ["string", "null"]},
+        {"name":"from","type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"reply_to", "type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"in_reply_to", "type": [{"type":"array", "items":"string"}, "null"]},
+        {"name":"subject", "type": ["string", "null"]},
+        {"name":"body", "type": ["string", "null"]},
+        {"name":"date", "type": ["string", "null"]}
+    ]
+}

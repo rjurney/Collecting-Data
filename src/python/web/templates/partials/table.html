@@ -1,0 +1,14 @@
+<table class="table table-striped table-bordered table-condensed">
+  <thead>
+  <% @data.keys.each do |key| %>
+    <th><%= key %></th>
+  <% end %>
+  </thead>
+  <tbody>
+    <tr>
+    <% @data.values.each do |value| %>
+      <td><%= value %></td>
+    <% end %>
+    </tr>
+  </tbody>
+</table>

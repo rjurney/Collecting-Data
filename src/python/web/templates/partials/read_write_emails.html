@@ -1,0 +1,16 @@
+<table class="table table-striped table-bordered table-condensed">
+  <thead>
+  <% @data.first.keys[1..3].each do |key| %>
+    <th><%= key %></th>
+  <% end %>
+  </thead>
+  <tbody>
+  <% @data.each do |row| %>
+    <tr>
+    <% row.values[1..3].each do |value| %>
+      <td><%= value %></td>
+    <% end %>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
