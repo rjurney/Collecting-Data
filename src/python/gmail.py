@@ -85,6 +85,10 @@ def parse_date(date_string):
   return iso_time
 
 def process_email(msg):
+  
+  subject = msg['Subject']
+  body = get_body(msg)
+  
   avro_parts = {
     'message_id': msg['Message-ID'],
     'from': parse_addrs(msg['From']),
@@ -93,9 +97,9 @@ def process_email(msg):
     'bcc': parse_addrs(msg['Bcc']),
     'reply_to': parse_addrs(msg['Reply-To']),
     'in_reply_to': parse_addrs(msg['In-Reply-To']),
-    'subject': msg['Subject'],
+    'subject': subject,
     'date': parse_date(msg['Date']),
-    'body': get_body(msg)
+    'body': body
   }
   return avro_parts
 
@@ -104,7 +108,7 @@ def get_body(msg):
   if msg:
     for part in msg.walk():
       if part.get_content_type() == 'text/plain':
-        body += unicode(part.get_payload().encode('utf-8'), errors='ignore')
+        body += unicode(part.get_payload().encode('utf-8'), errors='replace')
   return body
 
 class TimeoutException(Exception): 
@@ -134,9 +138,10 @@ for id in ids:
   status, email_hash = fetch_email(imap, str(id))
   if(status == 'OK'):
     try:
-        avro_writer.append(email_hash)
-    except UnicodeDecodeError:
-        sys.stderr.write('AVRO')
+      avro_writer.append(email_hash)
+    except UnicodeDecodeError, e:
+      sys.stderr.write('AVRO APPEND PROBLEM with id [' + str(id) + "]\n")
+      exit()
     if email_hash['subject']:
       print str(id) + ": " + email_hash['subject']
     else:
@@ -146,16 +151,11 @@ for id in ids:
     continue
   elif (status == 'ABORT' or status == 'TIMEOUT'):
     sys.stderr.write("resetting imap for " + status + "\n")
-    try:
-      imap.close()
-      imap.logout()
-    except:
-      pass
     imap, count = init_imap(username, password, imap_folder)
+    system.stderr.write("IMAP RESET\n")
   else:
     continue
 
 avro_writer.close()
 imap.close()
 imap.logout()
-
