@@ -1,0 +1,16 @@
+Pig Stack Trace
+---------------
+ERROR 1000: Error during parsing. File not found: wondderdor.pig
+
+org.apache.pig.tools.pigscript.parser.ParseException: File not found: wondderdor.pig
+	at org.apache.pig.tools.grunt.GruntParser.loadScript(GruntParser.java:501)
+	at org.apache.pig.tools.grunt.GruntParser.processExplain(GruntParser.java:315)
+	at org.apache.pig.tools.grunt.GruntParser.processExplain(GruntParser.java:289)
+	at org.apache.pig.tools.pigscript.parser.PigScriptParser.Explain(PigScriptParser.java:665)
+	at org.apache.pig.tools.pigscript.parser.PigScriptParser.parse(PigScriptParser.java:325)
+	at org.apache.pig.tools.grunt.GruntParser.parseStopOnError(GruntParser.java:189)
+	at org.apache.pig.tools.grunt.GruntParser.parseStopOnError(GruntParser.java:165)
+	at org.apache.pig.tools.grunt.Grunt.exec(Grunt.java:84)
+	at org.apache.pig.Main.run(Main.java:456)
+	at org.apache.pig.Main.main(Main.java:111)
+================================================================================

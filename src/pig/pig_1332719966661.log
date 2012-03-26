@@ -1,0 +1,15 @@
+Pig Stack Trace
+---------------
+ERROR 2997: Encountered IOException. ExecException : Received Error while processing the map plan.
+
+java.io.IOException: ExecException : Received Error while processing the map plan.
+	at org.apache.pig.PigServer.getExamples(PigServer.java:1205)
+	at org.apache.pig.tools.grunt.GruntParser.processIllustrate(GruntParser.java:725)
+	at org.apache.pig.tools.pigscript.parser.PigScriptParser.Illustrate(PigScriptParser.java:591)
+	at org.apache.pig.tools.pigscript.parser.PigScriptParser.parse(PigScriptParser.java:306)
+	at org.apache.pig.tools.grunt.GruntParser.parseStopOnError(GruntParser.java:189)
+	at org.apache.pig.tools.grunt.GruntParser.parseStopOnError(GruntParser.java:165)
+	at org.apache.pig.tools.grunt.Grunt.exec(Grunt.java:84)
+	at org.apache.pig.Main.run(Main.java:456)
+	at org.apache.pig.Main.main(Main.java:111)
+================================================================================
