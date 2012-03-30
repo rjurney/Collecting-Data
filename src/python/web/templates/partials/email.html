@@ -1,4 +1,35 @@
 {% extends "layout.html" %}
-{% block content %}
-{{ email }}
-{% endblock %}
+
+{% macro display_emails(key, name) -%}
+  {% if email[key] %}
+  <div class="row">
+    <div class="span1">{{ name }}:</div>
+    {% for email in email[key] -%}
+      <div class="span3">{{ email['ARRAY_ELEM'] }}</div>
+    {% endfor -%}
+  </div>
+  {% endif -%}
+{%- endmacro -%}
+
+{% macro display_field(key, name) -%}
+  {% if email[key] %}
+    <div class="row">
+      <div class="span1">{{ name }}:</div>
+      <div class="span6">{{ email[key] }}</div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% block content -%}
+  {{ display_field('message_id', 'ID') }}
+  
+  {{ display_emails('from', 'From') }}
+  {{ display_emails('to', 'To') }}
+  {{ display_emails('cc', 'Cc') }}
+  {{ display_emails('bcc', 'Bcc') }}
+  {{ display_emails('reply_to', 'Reply-To') }}
+  
+  {{ display_field('date', 'Date') }}
+  {{ display_field('subject', 'Subject')}}
+  {{ display_field('body', 'Body')}}
+{% endblock -%}

@@ -24,8 +24,8 @@ def sent_counts(ego1, ego2):
 
 @app.route("/email/<message_id>")
 def email(message_id):
-  record = emails.find_one({"message_id": message_id})
-  email = json.dumps(record, sort_keys=True, indent=4, default=json_util.default)
+  email = emails.find_one({"message_id": message_id})
+  #email = json.dumps(record, sort_keys=True, indent=4, default=json_util.default)
   return render_template('partials/email.html', email=email)
 
 @app.route("/email/search/<query>")

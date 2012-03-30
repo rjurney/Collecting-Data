@@ -130,13 +130,36 @@ class TimeoutException(Exception):
   pass
 
 # MAIN
-if (len(sys.argv) < 4):
-  print """Usage: gmail.py <username@gmail.com> <password> <output_directory>"""
-  exit(0)
+mode = None
+username = None
+password = None
+output_dir = None
 
-username = sys.argv[1]
-password = sys.argv[2]
-output_dir = init_directory(sys.argv[3])
+# If there aren't enough command line variables...
+if (len(sys.argv) < 5):
+  env_set = 0
+  # Count that we have full environment variables setup
+  for key in ['GMAIL_USERNAME', 'GMAILPASS', 'OUTPUTDIR']:
+    if os.environ[key]:
+      env_set += 1
+  print env_set
+  # If we have complete ENV defaults, we can run...
+  if env_set == 3:
+    mode = 'interactive'
+    username = os.environ['GMAIL_USERNAME']
+    password = os.environ['GMAILPASS']
+    output_dir = init_directory(os.environ['OUTPUTDIR'])
+  # If we don't have ENV, we must have command line arguments
+  else:
+    print """Usage: gmail.py <mode: interactive|automatic> <username@gmail.com> <password> <output_directory>"""
+    exit(0)
+# If there are enough command line variables, set em
+else:
+  mode = sys.argv[1]
+  username = sys.argv[2]
+  password = sys.argv[3]
+  output_dir = init_directory(sys.argv[4])
+
 imap_folder = '[Gmail]/All Mail'
 schema_path = 'email.schema'
 
@@ -148,30 +171,33 @@ max = int(count[0])
 ids = range(1,max)
 ids.reverse()
 
-for id in ids:
-  status, email_hash = fetch_email(imap, str(id))
-  if(status == 'OK'):
-    # try:
-    avro_writer.append(email_hash)
-    # except UnicodeDecodeError, e:
-    #   sys.stderr.write('AVRO APPEND PROBLEM with id [' + str(id) + "]\n")
-    #   print e
-    #   raise e
-    #   exit()
-    if email_hash['subject']:
-      print str(id) + ": " + email_hash['subject']
+if mode == 'automatic':
+  for id in ids:
+    status, email_hash = fetch_email(imap, str(id))
+    if(status == 'OK'):
+      # try:
+      avro_writer.append(email_hash)
+      # except UnicodeDecodeError, e:
+      #   sys.stderr.write('AVRO APPEND PROBLEM with id [' + str(id) + "]\n")
+      #   print e
+      #   raise e
+      #   exit()
+      if email_hash['subject']:
+        print str(id) + ": " + email_hash['subject']
+      else:
+        print "No Subject"
+    elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE'):
+      sys.stderr.write(status + "\n")
+      continue
+    elif (status == 'ABORT' or status == 'TIMEOUT'):
+      sys.stderr.write("resetting imap for " + status + "\n")
+      imap, count = init_imap(username, password, imap_folder)
+      sys.stderr.write("IMAP RESET\n")
     else:
-      print "No Subject"
-  elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE'):
-    sys.stderr.write(status + "\n")
-    continue
-  elif (status == 'ABORT' or status == 'TIMEOUT'):
-    sys.stderr.write("resetting imap for " + status + "\n")
-    imap, count = init_imap(username, password, imap_folder)
-    sys.stderr.write("IMAP RESET\n")
-  else:
-    continue
+      continue
+  
+  avro_writer.close()
+  
+  imap.close()
+  imap.logout()
 
-avro_writer.close()
-imap.close()
-imap.logout()
