@@ -101,7 +101,7 @@ def process_email(msg):
   
   if charset:
     subject = subject.decode(charset)#.encode('utf-8')
-    body = subject.decode(charset)#.encode('utf-8')
+    body = body.decode(charset)#.encode('utf-8')
   
   avro_parts = {
     'message_id': msg['Message-ID'],
@@ -142,13 +142,13 @@ if (len(sys.argv) < 5):
   for key in ['GMAIL_USERNAME', 'GMAILPASS', 'OUTPUTDIR']:
     if os.environ[key]:
       env_set += 1
-  print env_set
   # If we have complete ENV defaults, we can run...
   if env_set == 3:
     mode = 'interactive'
     username = os.environ['GMAIL_USERNAME']
     password = os.environ['GMAILPASS']
     output_dir = init_directory(os.environ['OUTPUTDIR'])
+    print "Interactive IMAP mode setup..."
   # If we don't have ENV, we must have command line arguments
   else:
     print """Usage: gmail.py <mode: interactive|automatic> <username@gmail.com> <password> <output_directory>"""
@@ -177,11 +177,6 @@ if mode == 'automatic':
     if(status == 'OK'):
       # try:
       avro_writer.append(email_hash)
-      # except UnicodeDecodeError, e:
-      #   sys.stderr.write('AVRO APPEND PROBLEM with id [' + str(id) + "]\n")
-      #   print e
-      #   raise e
-      #   exit()
       if email_hash['subject']:
         print str(id) + ": " + email_hash['subject']
       else:
