@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Agile Data</title>
+    <title>Agile Data Inbox</title>
     <meta name="description" content="Agile Data Examples">
     <meta name="author" content="Russell Jurney">
 
@@ -12,10 +12,10 @@
     <![endif]-->
 
     <!-- Le styles -->
-    <link href="/bootstrap/docs/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/bootstrap/docs/assets/css/bootstrap.css" rel="stylesheet">
     <style type="text/css">
       body {
-        padding-top: 60px;
+        padding: 50px;
       }
     </style>
 
@@ -23,31 +23,30 @@
     <link rel="shortcut icon" href="images/favicon.ico">
   </head>
   <body>
-    <div class="navbar navbar-fixed">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="#">Agile Data</a>
-          <ul class="nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
+        <div class="navbar navbar-fixed">
+          <div class="navbar-inner">
+            <div class="container">
+              <a class="brand" href="#">Agile Data Inbox</a>
+              <ul class="nav">
+                <li class="active"><a href="/email">Home</a></li>
+                <form class="navbar-search">
+                    <input type="text" class="search-query span3" placeholder="Search">
+                </form>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
     <div class="container">
       <section id="responsive">
         <!-- Main hero unit for a primary marketing message or call to action -->
-        <div class="hero-unit" style="background-color: white; border: 1px solid #CCC">
+        <div class="hero-unit" style="background-color: white; ">
           {% block content %}{% endblock %}
         </div>
       </section>
-      <footer>
-        <p>&copy; Agile Data 2012</p>
-      </footer>
-
     </div> <!-- /container -->
-
+    <footer>
+      <p>&copy; Agile Data 2012</p>
+    </footer>
   </body>
 </html>

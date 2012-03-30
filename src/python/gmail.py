@@ -11,7 +11,7 @@ import time
 
 def init_directory(directory):
   if os.path.exists(directory):
-    print '%(directory)s already exists' % {"directory":directory}
+    print 'Warning: %(directory)s already exists. Replacing it.' % {"directory":directory}
   else:
     os.makedirs(directory)
   return directory
@@ -89,6 +89,20 @@ def process_email(msg):
   subject = msg['Subject']
   body = get_body(msg)
   
+  # Without handling charsets, corrupt avros will get written
+  charsets = msg.get_charsets()
+  charset = None
+  for c in charsets:
+    if c != None:
+      charset = c
+      break
+  
+  print "CHARSET: " + charset
+  
+  if charset:
+    subject = subject.decode(charset)#.encode('utf-8')
+    body = subject.decode(charset)#.encode('utf-8')
+  
   avro_parts = {
     'message_id': msg['Message-ID'],
     'from': parse_addrs(msg['From']),
@@ -108,7 +122,7 @@ def get_body(msg):
   if msg:
     for part in msg.walk():
       if part.get_content_type() == 'text/plain':
-        body += unicode(part.get_payload().encode('utf-8'), errors='replace')
+        body += part.get_payload()
   return body
 
 class TimeoutException(Exception): 
@@ -137,11 +151,13 @@ ids.reverse()
 for id in ids:
   status, email_hash = fetch_email(imap, str(id))
   if(status == 'OK'):
-    try:
-      avro_writer.append(email_hash)
-    except UnicodeDecodeError, e:
-      sys.stderr.write('AVRO APPEND PROBLEM with id [' + str(id) + "]\n")
-      exit()
+    # try:
+    avro_writer.append(email_hash)
+    # except UnicodeDecodeError, e:
+    #   sys.stderr.write('AVRO APPEND PROBLEM with id [' + str(id) + "]\n")
+    #   print e
+    #   raise e
+    #   exit()
     if email_hash['subject']:
       print str(id) + ": " + email_hash['subject']
     else:
@@ -152,7 +168,7 @@ for id in ids:
   elif (status == 'ABORT' or status == 'TIMEOUT'):
     sys.stderr.write("resetting imap for " + status + "\n")
     imap, count = init_imap(username, password, imap_folder)
-    system.stderr.write("IMAP RESET\n")
+    sys.stderr.write("IMAP RESET\n")
   else:
     continue
 

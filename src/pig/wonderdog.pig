@@ -1,36 +1,42 @@
 /* Load ElasticSearch integration */
-register '/me/wonderdog/target/wonderdog-1.0-SNAPSHOT.jar';
-register '/me/elasticsearch-0.18.6/lib/elasticsearch-0.18.6.jar';
-register '/me/elasticsearch-0.18.6/lib/jline-0.9.94.jar';
-register '/me/elasticsearch-0.18.6/lib/jna-3.2.7.jar';
-register '/me/elasticsearch-0.18.6/lib/log4j-1.2.16.jar';
-register '/me/elasticsearch-0.18.6/lib/lucene-analyzers-3.5.0.jar';
-register '/me/elasticsearch-0.18.6/lib/lucene-core-3.5.0.jar';
-register '/me/elasticsearch-0.18.6/lib/lucene-highlighter-3.5.0.jar';
-register '/me/elasticsearch-0.18.6/lib/lucene-memory-3.5.0.jar';
-register '/me/elasticsearch-0.18.6/lib/lucene-queries-3.5.0.jar';
+register /me/wonderdog/target/wonderdog-1.0-SNAPSHOT.jar;
+register /me/elasticsearch-0.18.6/lib/elasticsearch-0.18.6.jar;
+register /me/elasticsearch-0.18.6/lib/jline-0.9.94.jar;
+register /me/elasticsearch-0.18.6/lib/jna-3.2.7.jar;
+register /me/elasticsearch-0.18.6/lib/log4j-1.2.16.jar;
+register /me/elasticsearch-0.18.6/lib/lucene-analyzers-3.5.0.jar;
+register /me/elasticsearch-0.18.6/lib/lucene-core-3.5.0.jar;
+register /me/elasticsearch-0.18.6/lib/lucene-highlighter-3.5.0.jar;
+register /me/elasticsearch-0.18.6/lib/lucene-memory-3.5.0.jar;
+register /me/elasticsearch-0.18.6/lib/lucene-queries-3.5.0.jar;
 
 /* Load Avro jars */
-register /me/newpig/build/ivy/lib/Pig/avro-1.5.3.jar
-register /me/newpig/build/ivy/lib/Pig/json-simple-1.1.jar
-register /me/newpig/contrib/piggybank/java/piggybank.jar
-register /me/newpig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
-register /me/newpig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
-register /me/newpig/build/ivy/lib/Pig/joda-time-1.6.jar
+register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
+register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
+register /me/pig/contrib/piggybank/java/piggybank.jar
+register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
+register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
+register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
+
+/* MongoDB */
+register /me/mongo-hadoop/mongo-2.7.2.jar
+register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0-rc0.jar
+register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0-rc0.jar
+
+set default_parallel 5
+set pig.piggybank.storage.avro.bad.record.threshold 0.01
+set pig.piggybank.storage.avro.bad.record.min 100
+set mapred.map.tasks.speculative.execution false
+set mapred.reduce.tasks.speculative.execution false
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
--- define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage();
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage('/me/elasticsearch-0.18.6/config/elasticsearch.yml', '/me/elasticsearch-0.18.6/plugins');
 
-messages = load '/me/tmp/emails.avro' using AvroStorage();
-messages = FILTER messages BY (from IS NOT NULL) AND (to IS NOT NULL);
-smaller = FOREACH messages GENERATE FLATTEN(from) as from, FLATTEN(to) as to;
-pairs = FOREACH smaller GENERATE LOWER(from) AS from, LOWER(to) AS to;
+emails = load '/me/tmp/emails' using AvroStorage();
+store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
 
-froms = GROUP pairs BY (from, to) PARALLEL 10;
-sent_counts = FOREACH froms GENERATE FLATTEN(group) AS (from, to), COUNT(pairs) AS total;
+/*store emails into 'es://email/email?json=false&size=1000' using ElasticSearch();*/
 
-STORE sent_counts INTO '/tmp/sent_counts';  
-
-/*STORE sent_counts INTO 'es://sent_counts/sent_counts?json=false&size=1000' USING 
-  com.infochimps.elasticsearch.pig.ElasticSearchStorage('/me/elasticsearch-0.18.6/config/elasticsearch.yml', '/me/elasticsearch-0.18.6/plugins');
-*/
+/* Now, for example: curl -XGET 'http://localhost:9200/email/email/_search?q=hadoop&pretty=true&size=1' 
+   will return the top hit about hadoop.  Woohoo!  */
