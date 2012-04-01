@@ -34,9 +34,9 @@ define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage('/me/elasticsearch-0.18.6/config/elasticsearch.yml', '/me/elasticsearch-0.18.6/plugins');
 
 emails = load '/me/tmp/emails' using AvroStorage();
-store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
 
-/*store emails into 'es://email/email?json=false&size=1000' using ElasticSearch();*/
+store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
+store emails into 'es://email/email?json=false&size=1000' using ElasticSearch();
 
 /* Now, for example: curl -XGET 'http://localhost:9200/email/email/_search?q=hadoop&pretty=true&size=1' 
    will return the top hit about hadoop.  Woohoo!  */

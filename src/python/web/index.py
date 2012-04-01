@@ -8,7 +8,7 @@ app = Flask(__name__)
 connection = Connection()
 db = connection.agile_data
 emails = db.emails
-search = pyelasticsearch.ElasticSearch('http://localhost:9200/')
+elastic = pyelasticsearch.ElasticSearch('http://localhost:9200/')
 
 @app.route("/<input>")
 def echo(input):
@@ -25,12 +25,11 @@ def sent_counts(ego1, ego2):
 @app.route("/email/<message_id>")
 def email(message_id):
   email = emails.find_one({"message_id": message_id})
-  #email = json.dumps(record, sort_keys=True, indent=4, default=json_util.default)
   return render_template('partials/email.html', email=email)
 
 @app.route("/email/search/<query>")
 def search_email(query):
-  result = search.search(query, indexes=["emails"])
+  result = elastic.search(query, indexes=["emails"])
   hits = result['hits']['hits']
   jstring = json.dumps(hits, sort_keys=True, indent=4)
   return jstring, 200, {'Content-Type': 'application/json; charset=utf-8'}
