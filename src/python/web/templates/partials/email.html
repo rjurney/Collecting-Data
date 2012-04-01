@@ -60,9 +60,9 @@
 
 <!-- Display the email body -->
 {% macro display_body(record) -%}
-  {% if(email['body']) -%}
-    <div class="row" style="margin-top: 20px;">
-      <div class="span" style="display: inline-block">{{ convert_body(email['body']) }}</div>
+  {% if(record['body']) -%}
+    <div class="container" style="margin-top: 20px;">
+      {{ convert_body(record['body']) }}
     </div>
   {% endif -%}
 {% endmacro -%}
