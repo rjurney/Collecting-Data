@@ -1,24 +1,71 @@
 {% extends "layout.html" %}
 
+<!-- Display a label for a field -->
+{% macro display_label(name) -%}
+  {% if name -%}
+    <div class="span" style="width: 80px;">{{ name }}:</div>
+  {% endif -%}
+{% endmacro -%}
+
+<!-- Display a field's value -->
+{% macro display_value(record, key) -%}
+  {% if(email) -%}
+    <div class="span" style="display: inline-block">{{ record[key] }}</div>
+  {% endif -%}
+{% endmacro -%}
+
+<!-- Display a link as a value -->
+{% macro display_link(value) -%}
+  <div class="span" style="display: inline-block"><a href="/email/<{{ value }}>">&lt;{{ value }}&gt;</a></div>
+{% endmacro -%}
+
+<!-- Display a list of emails across a span, as in to/from/cc/bcc/reply_to -->
 {% macro display_emails(key, name) -%}
   {% if email[key] %}
   <div class="row">
-    <div class="span1">{{ name }}:</div>
+    {{ display_label(name) }}
     {% for email in email[key] -%}
-      <div class="span3">{{ email['ARRAY_ELEM'] }}</div>
+      {{ display_value(email, 'ARRAY_ELEM') }}
     {% endfor -%}
   </div>
   {% endif -%}
-{%- endmacro -%}
+{% endmacro -%}
 
+<!-- Display other fields as wider spans -->
 {% macro display_field(key, name) -%}
+  {% if email[key] -%}
+    <div class="row">
+      {{ display_label(name) }}
+      {{ display_value(email, key) }}
+    </div>
+  {% endif -%}
+{% endmacro -%}
+
+<!-- Link to another message ID -->
+{% macro display_reply_to(key, name) %}
   {% if email[key] %}
     <div class="row">
-      <div class="span1">{{ name }}:</div>
-      <div class="span6">{{ email[key] }}</div>
+      {{ display_label(name) }}
+      {% for email in email[key] -%}
+        {{ display_link(email['ARRAY_ELEM']) }}
+      {% endfor %}
     </div>
   {% endif %}
 {% endmacro %}
+
+<!-- Convert the carriage returns in a message body to HTML endlines -->
+{% macro convert_body(body) -%}
+  {{ body.replace('\r\n', '<br />')|safe }}
+{% endmacro -%}
+
+<!-- Display the email body -->
+{% macro display_body(record) -%}
+  {% if(email['body']) -%}
+    <div class="row" style="margin-top: 20px;">
+      <div class="span" style="display: inline-block">{{ convert_body(email['body']) }}</div>
+    </div>
+  {% endif -%}
+{% endmacro -%}
 
 {% block content -%}
   {{ display_field('message_id', 'ID') }}
@@ -29,7 +76,10 @@
   {{ display_emails('bcc', 'Bcc') }}
   {{ display_emails('reply_to', 'Reply-To') }}
   
+  {{ display_reply_to('in_reply_to', 'In-Reply-To') }}
   {{ display_field('date', 'Date') }}
   {{ display_field('subject', 'Subject')}}
-  {{ display_field('body', 'Body')}}
+  
+  {{ display_body(email) }}
+
 {% endblock -%}

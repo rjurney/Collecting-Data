@@ -178,7 +178,8 @@ if mode == 'automatic':
       # try:
       avro_writer.append(email_hash)
       if email_hash['subject']:
-        print str(id) + ": " + email_hash['subject']
+        #print str(id) + ": " + email_hash['subject']
+        print "."
       else:
         print "No Subject"
     elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE'):

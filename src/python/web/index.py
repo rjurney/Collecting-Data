@@ -30,7 +30,7 @@ def email(message_id):
 
 @app.route("/email/search/<query>")
 def search_email(query):
-  result = search.search(query, indexes=["sent_counts"])
+  result = search.search(query, indexes=["emails"])
   hits = result['hits']['hits']
   jstring = json.dumps(hits, sort_keys=True, indent=4)
   return jstring, 200, {'Content-Type': 'application/json; charset=utf-8'}
