@@ -12,7 +12,7 @@ import json, pyelasticsearch
 app = Flask(__name__)
 connection = Connection()
 db = connection.agile_data
-emails = db.emails
+emaildb = db.emails
 elastic = pyelasticsearch.ElasticSearch('http://localhost:9200/')
 
 @app.route("/<input>")
@@ -29,12 +29,23 @@ def sent_counts(ego1, ego2):
 
 @app.route("/email/<message_id>")
 def email(message_id):
-  email = emails.find_one({"message_id": message_id})
+  email = emaildb.find_one({"message_id": message_id})
   return render_template('partials/email.html', email=email)
 
-@app.route("/email/search/<query>")
+# Enable /emails and /emails/ to serve the last 20 emaildb in our inbox unless otherwise specified
+default_offsets={'offset1': 0, 'offset2': 20}
+@app.route('/emails', defaults=default_offsets)
+@app.route('/emails/', defaults=default_offsets)
+@app.route("/emails/<offset1>/<offset2>")
+def list_emaildb(offset1, offset2):
+  offset1 = int(offset1)
+  offset2 = int(offset2)
+  emails = emaildb.find()[offset1:offset2] # Uses a MongoDB cursor
+  return render_template('partials/emails.html', emails=emails)
+
+@app.route("/emails/search/<query>")
 def search_email(query):
-  result = elastic.search(query, indexes=["emails"])
+  result = elastic.search(query, indexes=["emaildb"])
   hits = result['hits']['hits']
   jstring = json.dumps(hits, sort_keys=True, indent=4)
   return jstring, 200, {'Content-Type': 'application/json; charset=utf-8'}

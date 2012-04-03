@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block content -%}
+<table class="table table-striped table-bordered table-condensed">
+  <thead>
+    <th>From</th><th>Subject</th><th>Date</th>
+  </thead>
+  <tbody>
+    <tr>
+    {% for email in emails %}
+      <td>email['from']</td><td>email['subject']</td><td>email['date']</td>
+    {% endfor %}
+    </tr>
+  </tbody>
+</table>
+{% endblock -%}
