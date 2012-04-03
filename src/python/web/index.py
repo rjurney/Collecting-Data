@@ -1,8 +1,13 @@
 #!/usr/bin/env python
+
 # Flask:
-from pymongo import Connection, json_util
-import json, pyelasticsearch
 from flask import Flask, render_template
+
+# MongoDB and BSON util
+from pymongo import Connection, json_util
+
+# ElasticSearch
+import json, pyelasticsearch
 
 app = Flask(__name__)
 connection = Connection()

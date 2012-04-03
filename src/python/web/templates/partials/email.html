@@ -69,6 +69,7 @@
   {% endif -%}
 {% endmacro -%}
 
+<!-- Block in which content appears in superclass - layout.html -->
 {% block content -%}
   {{ display_field('message_id', 'ID') }}
   
@@ -83,5 +84,4 @@
   {{ display_field('subject', 'Subject')}}
   
   {{ display_body(email) }}
-
 {% endblock -%}
