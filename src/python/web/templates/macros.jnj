@@ -1,0 +1,4 @@
+<!-- Display a link as a value -->
+{% macro display_link(value, base_path, display) -%}
+  <div class="span" style="display: inline-block"><a href="{{ base_path }}/{{ value }}">{{ display }}</a></div>
+{% endmacro -%}

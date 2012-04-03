@@ -1,16 +1,36 @@
+<!-- Extend our site layout -->
 {% extends "layout.html" %}
 
+<!-- Include our common macro set -->
+{% import "macros.jnj" as common %}
+
+<!-- Display a list of emails across a span, as in to/from/cc/bcc/reply_to -->
+{% macro display_emails(list) -%}
+  {% if list %}
+    {% for email in list -%}
+      {{ display_value(email, 'ARRAY_ELEM') }}
+    {% endfor -%}
+  {% endif -%}
+{% endmacro -%}
+
+<!-- Display a field's value -->
+{% macro display_value(record, key) -%}
+  {% if(record) -%}
+    {{ record[key] }}
+  {% endif -%}
+{% endmacro -%}
+
 {% block content -%}
-<table class="table table-striped table-bordered table-condensed">
-  <thead>
-    <th>From</th><th>Subject</th><th>Date</th>
-  </thead>
-  <tbody>
-    <tr>
-    {% for email in emails %}
-      <td>email['from']</td><td>email['subject']</td><td>email['date']</td>
-    {% endfor %}
-    </tr>
-  </tbody>
-</table>
+  <table class="table table-striped table-bordered table-condensed">
+    <thead>
+      <th>From</th><th>Subject</th><th>Date</th>
+    </thead>
+    <tbody>
+      {% for email in emails %}
+      <tr>
+        <td>{{ display_emails(email['from']) }}</td><td>{{ common.display_link(email['message_id'], '/email', email['subject'])|safe }}</td><td>{{ email['date'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock -%}

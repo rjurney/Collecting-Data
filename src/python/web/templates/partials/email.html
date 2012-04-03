@@ -1,4 +1,8 @@
+<!-- Extend our site layout -->
 {% extends "layout.html" %}
+
+<!-- Include our common macro set -->
+{% import "macros.jnj" as common %}
 
 <!-- Display a label for a field -->
 {% macro display_label(name) -%}
@@ -12,11 +16,6 @@
   {% if(email) -%}
     <div class="span" style="display: inline-block">{{ record[key] }}</div>
   {% endif -%}
-{% endmacro -%}
-
-<!-- Display a link as a value -->
-{% macro display_link(value) -%}
-  <div class="span" style="display: inline-block"><a href="/email/<{{ value }}>">&lt;{{ value }}&gt;</a></div>
 {% endmacro -%}
 
 <!-- Display a list of emails across a span, as in to/from/cc/bcc/reply_to -->
@@ -47,7 +46,7 @@
     <div class="row">
       {{ display_label(name) }}
       {% for email in email[key] -%}
-        {{ display_link(email['ARRAY_ELEM']) }}
+        {{ common.display_link('<' + email['ARRAY_ELEM'] + '>', '/email', email['ARRAY_ELEM'])|safe }}
       {% endfor %}
     </div>
   {% endif %}
