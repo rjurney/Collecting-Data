@@ -28,7 +28,9 @@
     <tbody>
       {% for email in emails %}
       <tr>
-        <td>{{ display_emails(email['from']) }}</td><td>{{ common.display_link(email['message_id'], '/email', email['subject'])|safe }}</td><td>{{ email['date'] }}</td>
+        <td>{{ display_emails(email['from']) }}</td>
+        <td>{{ common.display_link(email['message_id'], '/email', email['subject'])|safe }}</td>
+        <td>{{ email['date'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
