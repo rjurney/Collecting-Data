@@ -9,6 +9,9 @@ from pymongo import Connection, json_util
 # ElasticSearch
 import json, pyelasticsearch
 
+# Simple configuration and helpers
+import config, helpers
+
 app = Flask(__name__)
 connection = Connection()
 db = connection.agile_data
@@ -36,12 +39,14 @@ def email(message_id):
 default_offsets={'offset1': 0, 'offset2': 20}
 @app.route('/emails', defaults=default_offsets)
 @app.route('/emails/', defaults=default_offsets)
-@app.route("/emails/<offset1>/<offset2>")
+@app.route("/emails/<int:offset1>/<int:offset2>")
 def list_emaildb(offset1, offset2):
   offset1 = int(offset1)
   offset2 = int(offset2)
   emails = emaildb.find()[offset1:offset2] # Uses a MongoDB cursor
-  return render_template('partials/emails.html', emails=emails)
+  nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
+  data = {'emails': emails, 'nav_offsets': nav_offsets}
+  return render_template('partials/emails.html', data=data)
 
 @app.route("/emails/search/<query>")
 def search_email(query):
