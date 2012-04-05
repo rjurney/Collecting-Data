@@ -3,28 +3,11 @@
   <div class="span" style="display: inline-block"><a href="{{ base_path }}/{{ value }}">{{ display }}</a></div>
 {% endmacro -%}
 
-<!-- Display a pair of nav links -->
-{% macro display_nav_links(offset1, offset2, increment) -%}
+<!-- Display a pair of navigation links for previous/next page in the email list -->
+{% macro display_nav(offsets) -%}
   <div style="text-align: center">
-    {{ nav_link('Previous', offset1, offset2, increment) }}
-    {{ nav_link('Next', offset1, offset2, increment )}}
+    {% for key, values in offsets.items() -%}
+      <a href="/emails/{{ values['bottom'] }}/{{ values['top'] }}">{{ key }}</a>
+    {% endfor -%}
   </div>
-{% endmacro -%}
-
-<!-- Display a single nav link -->
-{% macro nav_link(label, offset1, offset2, increment) -%}
-  {% set bottom = get_increment(offset1, increment, label) -%}
-  {% set top = get_increment(offset2, increment, label) -%}
-  {% if bottom > 0 -%}
-    <a href="/emails/{{ bottom }}/{{ top }}">{{ label }}</a>
-  {% endif -%}
-{% endmacro -%}
-
-{% macro get_increment( offset, increment, label ) -%}
-  {% if label == 'Previous' -%}
-    {{ offset - increment }}
-  {% endif -%}
-  {% if label == 'Next' -%}
-    {{ offset + increment }}
-  {% endif -%}
 {% endmacro -%}

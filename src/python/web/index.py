@@ -11,6 +11,7 @@ import json, pyelasticsearch
 
 # Simple configuration and helpers
 import config, helpers
+from helpers import *
 
 app = Flask(__name__)
 connection = Connection()

@@ -26,7 +26,7 @@
       <th>From</th><th>Subject</th><th>Date</th>
     </thead>
     <tbody>
-      {% for email in emails %}
+      {% for email in data['emails'] %}
       <tr>
         <td>{{ display_emails(email['from']) }}</td>
         <td>{{ common.display_link(email['message_id'], '/email', email['subject'])|safe }}</td>
@@ -35,5 +35,5 @@
       {% endfor %}
     </tbody>
   </table>
-  {{ common.display_v_links(data['offset1'], data['offset2'], 20) }}
+  {{ common.display_nav(data['nav_offsets'])|safe }}
 {% endblock -%}
