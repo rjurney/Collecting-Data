@@ -7,7 +7,11 @@
 {% macro display_nav(offsets) -%}
   <div style="text-align: center">
     {% for key, values in offsets.items() -%}
-      <a href="/emails/{{ values['bottom'] }}/{{ values['top'] }}">{{ key }}</a>
+      {% if values['bottom'] >= 0 -%}
+        <a href="/emails/{{ values['bottom'] }}/{{ values['top'] }}">{{ key }}</a>
+      {% else -%}
+        {{ key }}
+      {% endif -%}
     {% endfor -%}
   </div>
 {% endmacro -%}
