@@ -17,6 +17,8 @@
       body {
         padding: 50px;
       }
+      td { page-break-inside: avoid; }
+      .hero-unit { padding: 0px; }
     </style>
 
     <!-- Le fav and touch icons -->
@@ -39,7 +41,7 @@
     <div class="container">
       <section id="responsive" style="text-align: center">
         <!-- Main hero unit for a primary marketing message or call to action -->
-        <div class="hero-unit" style="background-color: white; border:1px solid #ccc; text-align: left; display: inline-block; margin: auto;">
+        <div class="hero-unit" style="background-color: white; text-align: left; display: inline-block; margin: auto;">
           {% block content %}{% endblock %}
         </div>
       </section>

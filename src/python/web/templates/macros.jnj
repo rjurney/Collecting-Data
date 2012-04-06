@@ -1,14 +1,14 @@
 <!-- Display a link as a value -->
 {% macro display_link(value, base_path, display) -%}
-  <div class="span" style="display: inline-block"><a href="{{ base_path }}/{{ value }}">{{ display }}</a></div>
+  <div class="span" style="display: inline-block;"><a href="{{ base_path }}/{{ value }}">{{ display|truncate(length=50, killwords=False, end='...') }}</a></div>
 {% endmacro -%}
 
 <!-- Display a pair of navigation links for previous/next page in the email list -->
 {% macro display_nav(offsets) -%}
-  <div style="text-align: center">
+  <div style="text-align: center;">
     {% for key, values in offsets.items() -%}
       {% if values['bottom'] >= 0 -%}
-        <a href="/emails/{{ values['bottom'] }}/{{ values['top'] }}">{{ key }}</a>
+        <a style="margin-left: 20px; margin-right: 20px;" href="/emails/{{ values['bottom'] }}/{{ values['top'] }}">{{ key }}</a>
       {% else -%}
         {{ key }}
       {% endif -%}

@@ -50,18 +50,19 @@ def list_emaildb(offset1, offset2):
   data = {'emails': emails, 'nav_offsets': nav_offsets}
   return render_template('partials/emails.html', data=data)
 
-default_search={'query': ''}
+default_search={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE, 'query': 'foo'}
 @app.route("/emails/search", defaults=default_search)
 @app.route("/emails/search/", defaults=default_search)
-@app.route("/emails/search/<query>")
-def search_email(query):
-  if query == '':
+@app.route("/emails/search/<string:query>", defaults=default_search)
+@app.route("/emails/search/<string:query>/<int:offset1>/<int:offset2>")
+def search_email(query, offset1, offset2):
+  if query == 'foo':
     query = request.args.get('query')
-    return redirect('/emails/search/' + query)
-  
+    return redirect('/emails/search/' + query + '/' + str(offset1) + '/' + str(offset2))
   results = elastic.search(query, indexes=["email"])
   emails = process_results(results)
-  data = {'emails': emails}
+  nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
+  data = {'emails': emails, 'nav_offsets': nav_offsets}
   return render_template('partials/emails.html', data=data)
 
 if __name__ == "__main__":
