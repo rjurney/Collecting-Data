@@ -6,3 +6,14 @@ def get_offsets(offset1, offset2, increment):
   offsets['Next'] = {'top': offset2 + increment, 'bottom': offset1 + increment}
   offsets['Previous'] = {'top': offset2 - increment, 'bottom': offset1 - increment}
   return offsets
+
+# Process hits and return email records
+def process_results(results):
+  emails = []
+  if results['hits'] and results['hits']['hits']:
+    hits = results['hits']['hits']
+    for hit in hits:
+      email = hit['_source']
+      
+      emails.append(hit['_source'])
+  return emails

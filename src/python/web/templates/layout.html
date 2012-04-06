@@ -23,20 +23,19 @@
     <link rel="shortcut icon" href="/static/images/favicon.ico">
   </head>
   <body>
-        <div class="navbar navbar-fixed">
-          <div class="navbar-inner">
-            <div class="container">
-              <a class="brand" href="#">Agile Data Inbox</a>
-              <ul class="nav">
-                <li class="active"><a href="/email">Home</a></li>
-                <form class="navbar-search">
-                    <input type="text" class="search-query span3" placeholder="Search">
-                </form>
-              </ul>
-            </div>
-          </div>
+    <div class="navbar navbar-fixed">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/">Agile Data Inbox</a>
+          <ul class="nav">
+            <li class="active"><a href="/emails">Home</a></li>
+            <form class="navbar-search" method="get" action="/emails/search/">
+                <input name="query" type="text" class="search-query span3" placeholder="Search">
+            </form>
+          </ul>
         </div>
-
+      </div>
+    </div>
     <div class="container">
       <section id="responsive" style="text-align: center">
         <!-- Main hero unit for a primary marketing message or call to action -->

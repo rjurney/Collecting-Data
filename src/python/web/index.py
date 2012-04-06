@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Flask:
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect
 
 # MongoDB and BSON util
 from pymongo import Connection, json_util
@@ -17,7 +17,7 @@ app = Flask(__name__)
 connection = Connection()
 db = connection.agile_data
 emaildb = db.emails
-elastic = pyelasticsearch.ElasticSearch('http://localhost:9200/')
+elastic = pyelasticsearch.ElasticSearch(config.ELASTIC_URL)
 
 @app.route("/<input>")
 def echo(input):
@@ -37,7 +37,8 @@ def email(message_id):
   return render_template('partials/email.html', email=email)
 
 # Enable /emails and /emails/ to serve the last 20 emaildb in our inbox unless otherwise specified
-default_offsets={'offset1': 0, 'offset2': 20}
+default_offsets={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE}
+@app.route('/', defaults=default_offsets)
 @app.route('/emails', defaults=default_offsets)
 @app.route('/emails/', defaults=default_offsets)
 @app.route("/emails/<int:offset1>/<int:offset2>")
@@ -49,12 +50,19 @@ def list_emaildb(offset1, offset2):
   data = {'emails': emails, 'nav_offsets': nav_offsets}
   return render_template('partials/emails.html', data=data)
 
+default_search={'query': ''}
+@app.route("/emails/search", defaults=default_search)
+@app.route("/emails/search/", defaults=default_search)
 @app.route("/emails/search/<query>")
 def search_email(query):
-  result = elastic.search(query, indexes=["emaildb"])
-  hits = result['hits']['hits']
-  jstring = json.dumps(hits, sort_keys=True, indent=4)
-  return jstring, 200, {'Content-Type': 'application/json; charset=utf-8'}
+  if query == '':
+    query = request.args.get('query')
+    return redirect('/emails/search/' + query)
+  
+  results = elastic.search(query, indexes=["email"])
+  emails = process_results(results)
+  data = {'emails': emails}
+  return render_template('partials/emails.html', data=data)
 
 if __name__ == "__main__":
   app.run(debug=True)

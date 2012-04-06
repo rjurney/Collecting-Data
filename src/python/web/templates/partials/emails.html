@@ -6,19 +6,25 @@
 
 <!-- Display a list of emails across a span, as in to/from/cc/bcc/reply_to -->
 {% macro display_emails(list) -%}
-  {% if list %}
+  {% if list and list is not string %}
     {% for email in list -%}
       {{ display_value(email, 'ARRAY_ELEM') }}
+    {% endfor -%}
+  {% else -%}
+    {% for email in list[2:-2].split('),(') -%}
+      {{ email }}
     {% endfor -%}
   {% endif -%}
 {% endmacro -%}
 
 <!-- Display a field's value -->
 {% macro display_value(record, key) -%}
-  {% if(record) -%}
+  {% if record is defined -%}
     {{ record[key] }}
   {% endif -%}
 {% endmacro -%}
+
+<!-- Parse a pig tuple being passed through in string format -->
 
 {% block content -%}
   <table class="table table-striped table-bordered table-condensed">
@@ -35,5 +41,7 @@
       {% endfor %}
     </tbody>
   </table>
-  {{ common.display_nav(data['nav_offsets'])|safe }}
+  {% if data.has_key('nav_offsets') -%}
+    {{ common.display_nav(data['nav_offsets'])|safe }}
+  {% endif -%}
 {% endblock -%}
