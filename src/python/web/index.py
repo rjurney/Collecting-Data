@@ -47,22 +47,23 @@ def list_emaildb(offset1, offset2):
   offset2 = int(offset2)
   emails = emaildb.find()[offset1:offset2] # Uses a MongoDB cursor
   nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
-  data = {'emails': emails, 'nav_offsets': nav_offsets}
+  data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/emails/'}
   return render_template('partials/emails.html', data=data)
 
-default_search={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE, 'query': 'foo'}
+default_search={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE, 'query': False}
 @app.route("/emails/search", defaults=default_search)
 @app.route("/emails/search/", defaults=default_search)
 @app.route("/emails/search/<string:query>", defaults=default_search)
 @app.route("/emails/search/<string:query>/<int:offset1>/<int:offset2>")
 def search_email(query, offset1, offset2):
-  if query == 'foo':
+  print "Root: " + request.script_root
+  if query == False:
     query = request.args.get('query')
     return redirect('/emails/search/' + query + '/' + str(offset1) + '/' + str(offset2))
   results = elastic.search(query, indexes=["email"])
   emails = process_results(results)
   nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
-  data = {'emails': emails, 'nav_offsets': nav_offsets}
+  data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/emails/search/', 'query': query}
   return render_template('partials/emails.html', data=data)
 
 if __name__ == "__main__":

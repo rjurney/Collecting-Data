@@ -43,7 +43,7 @@
       {% endfor %}
     </tbody>
   </table>
-  {% if data.has_key('nav_offsets') -%}
-    {{ common.display_nav(data['nav_offsets'])|safe }}
+  {% if data.has_key('nav_offsets') and data.has_key('nav_path') -%}
+    {{ common.display_nav(data['nav_offsets'], data['nav_path'], data['query'])|safe }}
   {% endif -%}
 {% endblock -%}
