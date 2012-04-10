@@ -56,7 +56,6 @@ default_search={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE, 'query': False}
 @app.route("/emails/search/<string:query>", defaults=default_search)
 @app.route("/emails/search/<string:query>/<int:offset1>/<int:offset2>")
 def search_email(query, offset1, offset2):
-  print "Root: " + request.script_root
   if query == False:
     query = request.args.get('query')
     return redirect('/emails/search/' + query + '/' + str(offset1) + '/' + str(offset2))

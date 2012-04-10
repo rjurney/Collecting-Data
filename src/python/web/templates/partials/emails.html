@@ -10,10 +10,6 @@
     {% for email in list -%}
       {{ display_value(email, 'ARRAY_ELEM') }}
     {% endfor -%}
-  {% else -%}
-    {% for email in list[2:-2].split('),(') -%}
-      {{ email }}
-    {% endfor -%}
   {% endif -%}
 {% endmacro -%}
 
