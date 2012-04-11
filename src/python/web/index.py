@@ -59,7 +59,8 @@ def search_email(query, offset1, offset2):
   if query == False:
     query = request.args.get('query')
     return redirect('/emails/search/' + query + '/' + str(offset1) + '/' + str(offset2))
-  results = elastic.search(query, {'from': offset1}, indexes=["email"])
+  doc_count = offset2 - offset1
+  results = elastic.search(query, {'from': offset1, 'size': doc_count}, indexes=["email"])
   emails = process_results(results)
   nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
   data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/emails/search/', 'query': query}
