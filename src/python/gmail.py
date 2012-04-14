@@ -3,11 +3,14 @@
 import imaplib
 import sys, signal
 from avro import schema, datafile, io
-import os
+import os, re
 import email
 import inspect
 import pprint
 import time
+from lepl.apps.rfc3696 import Email
+
+is_email = Email()
 
 def init_directory(directory):
   if os.path.exists(directory):
@@ -52,32 +55,44 @@ def fetch_email(imap, id):
   try:
     status, data = imap.fetch(id, '(RFC822)')
   except TimeoutException:
-    return 'TIMEOUT', {}
+    return 'TIMEOUT', {}, None
   except imap.abort, e:
-    return 'ABORT', {}
+    return 'ABORT', {}, None
   
   if status != 'OK':
-    return 'ERROR', {}
+    return 'ERROR', {}, None
   else:
     raw_email = data[0][1]
   try:
     msg = email.message_from_string(raw_email)
-    avro_parts = process_email(msg)
+    avro_parts, charset = process_email(msg)
   except UnicodeDecodeError:
-    return 'UNICODE', {}
+    return 'UNICODE', {}, charset
   except:
-    return 'PARSE', {}
-  
-  return status, avro_parts
+    return 'PARSE', {}, charset
+    
+  if not avro_parts.has_key('from'):
+    return 'FROM', {}, charset
+    
+  # Without a charset we pass bad chars to avro, and it dies. See AVRO-565.
+  if charset:
+    return status, avro_parts, charset
+  else:
+    return 'CHARSET', {}, charset
 
 def parse_addrs(addr_string):
   if addr_string:
-    ads = email.utils.getaddresses([addr_string])
-    final = []
-    for a in ads:
-      final.append(a[1])
-    address = final
-    return address
+    addresses = email.utils.getaddresses([addr_string])
+    validated = []
+    for address in addresses:
+      if is_email(address[1].lower()):
+        validated.append(address[1].lower())
+      else:
+        print "Invalid Email: " + address[1]#.lower()
+    return validated
+
+def strip_brackets(message_id):
+  return str(message_id).strip('<>')
 
 def parse_date(date_string):
   tuple_time = email.utils.parsedate(date_string)
@@ -97,25 +112,25 @@ def process_email(msg):
       charset = c
       break
   
-  print "CHARSET: " + charset
-  
   if charset:
     subject = subject.decode(charset)#.encode('utf-8')
     body = body.decode(charset)#.encode('utf-8')
+  else:
+    return {}, charset
   
   avro_parts = {
-    'message_id': msg['Message-ID'],
+    'message_id': strip_brackets(msg['Message-ID']),
     'from': parse_addrs(msg['From']),
     'to': parse_addrs(msg['To']),
     'cc': parse_addrs(msg['Cc']),
     'bcc': parse_addrs(msg['Bcc']),
     'reply_to': parse_addrs(msg['Reply-To']),
-    'in_reply_to': parse_addrs(msg['In-Reply-To']),
+    'in_reply_to': strip_brackets(msg['In-Reply-To']),
     'subject': subject,
     'date': parse_date(msg['Date']),
     'body': body
   }
-  return avro_parts
+  return avro_parts, charset
 
 def get_body(msg):
   body = ''
@@ -173,16 +188,12 @@ ids.reverse()
 
 if mode == 'automatic':
   for id in ids:
-    status, email_hash = fetch_email(imap, str(id))
-    if(status == 'OK'):
-      # try:
+    status, email_hash, charset = fetch_email(imap, str(id))
+    
+    if(status == 'OK' and charset):
+      print id, charset, str(email_hash['from'])
       avro_writer.append(email_hash)
-      if email_hash['subject']:
-        #print str(id) + ": " + email_hash['subject']
-        print "."
-      else:
-        print "No Subject"
-    elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE'):
+    elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
       sys.stderr.write(status + "\n")
       continue
     elif (status == 'ABORT' or status == 'TIMEOUT'):
@@ -191,9 +202,9 @@ if mode == 'automatic':
       sys.stderr.write("IMAP RESET\n")
     else:
       continue
-  
-  avro_writer.close()
-  
-  imap.close()
-  imap.logout()
+
+avro_writer.close()
+
+imap.close()
+imap.logout()
 

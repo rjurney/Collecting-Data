@@ -7,6 +7,11 @@ from avro import schema, datafile, io
 import pprint
 import sys
 
+message_id = None
+# Optional key to print
+if (len(sys.argv) > 2):
+  message_id = sys.argv[2]
+
 # Test reading avros
 rec_reader = io.DatumReader()
 
@@ -19,5 +24,8 @@ df_reader = datafile.DataFileReader(
 # Read all records stored inside
 pp = pprint.PrettyPrinter()
 for record in df_reader:
-  pp.pprint(record)
+  if message_id:
+    pp.pprint(record[message_id])
+  else:
+    pp.pprint(record)
 

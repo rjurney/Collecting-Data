@@ -35,12 +35,12 @@ define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage('/me/elasticsearch-0.18.6/config/elasticsearch.yml', '/me/elasticsearch-0.18.6/plugins');
 
-/* Nuke the email store, as we are about to replace it. */
-sh curl -XDELETE 'http://localhost:9200/email/'
+/* Nuke the email index, as we are about to replace it. */
+sh curl -XDELETE 'http://localhost:9200/email/email'
 
 emails = load '/me/tmp/emails' using AvroStorage();
 store emails into '/tmp/emails.json' using JsonStorage();
--- store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
+store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
 
 emails = load '/tmp/emails.json' AS (json_record:chararray);
 store emails into 'es://email/email?id=message_id&json=true&size=1000' using ElasticSearch();
