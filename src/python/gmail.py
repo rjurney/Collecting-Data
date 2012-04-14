@@ -53,12 +53,15 @@ def fetch_email(imap, id):
   avro_parts = {}
   status = 'FAIL'
   try:
-    status, data = imap.fetch(id, '(RFC822)')
+    status, data = imap.fetch(id, '(X-GM-THRID RFC822)') # Gmail's X-GM-THRID will get the thread of the message
   except TimeoutException:
     return 'TIMEOUT', {}, None
   except imap.abort, e:
     return 'ABORT', {}, None
+  except imaplib.abort, e:
+    return 'ABORT', {}, None
   
+  charset = None
   if status != 'OK':
     return 'ERROR', {}, None
   else:
