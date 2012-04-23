@@ -34,6 +34,5 @@ for record in df_reader:
   else:
     pp.pprint(record)
 
-print "\nAvro Schema:\n"
 obj = json.loads(df_reader.meta['avro.schema'])
-print json.dumps(obj, sort_keys=True, indent=4)
+print "\nAvro Schema: " + json.dumps(obj)

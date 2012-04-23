@@ -39,11 +39,11 @@ define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage('/me/
 sh curl -XDELETE 'http://localhost:9200/email/email'
 
 emails = load '/me/tmp/emails' using AvroStorage();
-store emails into '/tmp/emails.json' using JsonStorage();
+--store emails into '/tmp/emails.json' using JsonStorage();
 store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
 
-emails = load '/tmp/emails.json' AS (json_record:chararray);
-store emails into 'es://email/email?id=message_id&json=true&size=1000' using ElasticSearch();
+--emails = load '/tmp/emails.json' AS (json_record:chararray);
+--store emails into 'es://email/email?id=message_id&json=true&size=1000' using ElasticSearch();
 
 /* Verify that we get a record */
 sh curl -XGET 'http://localhost:9200/email/email/_search?q=hadoop&pretty=true&size=1'
