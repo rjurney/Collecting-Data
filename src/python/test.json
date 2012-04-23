@@ -36,11 +36,11 @@
                         "null",
                         {
                             "type":"record",
-                            "name":"address_pair",
+                            "name":"from",
                             "fields":
                             [
                                 {
-                                    "name":"realname",
+                                    "name":"real_name",
                                     "type":["null","string"],
                                     "doc":""
                                 },
@@ -69,11 +69,11 @@
                         "null",
                         {
                             "type":"record",
-                            "name":"address_pair",
+                            "name":"to",
                             "fields":
                             [
                                 {
-                                    "name":"realname",
+                                    "name":"real_name",
                                     "type":["null","string"],
                                     "doc":""
                                 },
@@ -102,11 +102,11 @@
                         "null",
                         {
                             "type":"record",
-                            "name":"address_pair",
+                            "name":"cc",
                             "fields":
                             [
                                 {
-                                    "name":"realname",
+                                    "name":"real_name",
                                     "type":["null","string"],
                                     "doc":""
                                 },
@@ -135,11 +135,44 @@
                         "null",
                         {
                             "type":"record",
-                            "name":"address_pair",
+                            "name":"bcc",
                             "fields":
                             [
                                 {
-                                    "name":"realname",
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
+            "doc":""
+        },
+        {
+            "name":"reply_tos",
+            "type":
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"reply_to",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
                                     "type":["null","string"],
                                     "doc":""
                                 },

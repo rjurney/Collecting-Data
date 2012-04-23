@@ -1,17 +1,193 @@
 {
-    "namespace": "agile.data.avro",
-    "name": "Email",
-    "type": "record",
-    "fields": [
-        {"name":"message_id", "type": ["string", "null"]},
-        {"name":"from","type": [{"type":"array", "items":"string"}, "null"]},
-        {"name":"to","type": [{"type":"array", "items":"string"}, "null"]},
-        {"name":"cc","type": [{"type":"array", "items":"string"}, "null"]},
-        {"name":"bcc","type": [{"type":"array", "items":"string"}, "null"]},
-        {"name":"reply_to", "type": [{"type":"array", "items":"string"}, "null"]},
-        {"name":"in_reply_to", "type": ["string", "null"]},
-        {"name":"subject", "type": ["string", "null"]},
-        {"name":"body", "type": ["string", "null"]},
-        {"name":"date", "type": ["string", "null"]}
+    "type":"record",
+    "name":"Email",
+    "fields":
+    [
+        {
+            "name":"message_id",
+            "type":["null","string"],
+            "doc":""
+        },
+        {
+            "name":"in_reply_to",
+            "type": ["string", "null"]
+        },
+        {
+            "name":"subject", 
+            "type": ["string", "null"]
+        },
+        {
+            "name":"body", 
+            "type": ["string", "null"]
+        },
+        {
+            "name":"date", 
+            "type": ["string", "null"]
+        },
+        {
+            "name":"froms",
+            "type":
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"from",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
+            "doc":""
+        },
+        {
+            "name":"tos",
+            "type":
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"to",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
+            "doc":""
+        },        
+        {
+            "name":"ccs",
+            "type":
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"cc",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
+            "doc":""
+        },
+        {
+            "name":"bccs",
+            "type":
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"bcc",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
+            "doc":""
+        },
+        {
+            "name":"reply_tos",
+            "type":
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"reply_to",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
+            "doc":""
+        }
     ]
 }

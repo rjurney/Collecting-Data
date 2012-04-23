@@ -14,7 +14,7 @@ is_email = Email()
 
 def init_directory(directory):
   if os.path.exists(directory):
-    print 'Warning: %(directory)s already exists. Replacing it.' % {"directory":directory}
+    print 'Warning: %(directory)s already exists:' % {"directory":directory}
   else:
     os.makedirs(directory)
   return directory
@@ -74,7 +74,7 @@ def fetch_email(imap, id):
   except:
     return 'PARSE', {}, charset
     
-  if not avro_parts.has_key('from'):
+  if not avro_parts.has_key('froms'):
     return 'FROM', {}, charset
     
   # Without a charset we pass bad chars to avro, and it dies. See AVRO-565.
@@ -88,10 +88,18 @@ def parse_addrs(addr_string):
     addresses = email.utils.getaddresses([addr_string])
     validated = []
     for address in addresses:
-      if is_email(address[1].lower()):
-        validated.append(address[1].lower())
+      address_pair = {'real_name': None, 'address': None}
+      if address[0]:
+        address_pair['real_name'] = address[0]
+      if is_email(address[1]):
+        address_pair['address'] = address[1]
+      if not address[0] and not is_email(address[1]):
+        pass
       else:
-        print "Invalid Email: " + address[1]#.lower()
+        validated.append(address_pair)
+    if(len(validated) == 0):
+      validated = None
+    print validated
     return validated
 
 def strip_brackets(message_id):
@@ -100,6 +108,7 @@ def strip_brackets(message_id):
 def parse_date(date_string):
   tuple_time = email.utils.parsedate(date_string)
   iso_time = time.strftime("%Y-%m-%dT%H:%M:%S", tuple_time)
+  print iso_time
   return iso_time
 
 def process_email(msg):
@@ -121,17 +130,18 @@ def process_email(msg):
   else:
     return {}, charset
   
+  print "."
   avro_parts = {
     'message_id': strip_brackets(msg['Message-ID']),
-    'from': parse_addrs(msg['From']),
-    'to': parse_addrs(msg['To']),
-    'cc': parse_addrs(msg['Cc']),
-    'bcc': parse_addrs(msg['Bcc']),
-    'reply_to': parse_addrs(msg['Reply-To']),
     'in_reply_to': strip_brackets(msg['In-Reply-To']),
     'subject': subject,
     'date': parse_date(msg['Date']),
-    'body': body
+    'body': body,
+    'froms': parse_addrs(msg['From']),
+    'tos': parse_addrs(msg['To']),
+    'ccs': parse_addrs(msg['Cc']),
+    'bccs': parse_addrs(msg['Bcc']),
+    'reply_tos': parse_addrs(msg['Reply-To'])
   }
   return avro_parts, charset
 
@@ -179,7 +189,7 @@ else:
   output_dir = init_directory(sys.argv[4])
 
 imap_folder = '[Gmail]/All Mail'
-schema_path = 'email.schema'
+schema_path = 'test.json'
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -194,7 +204,7 @@ if mode == 'automatic':
     status, email_hash, charset = fetch_email(imap, str(id))
     
     if(status == 'OK' and charset):
-      print id, charset, str(email_hash['from'])
+      print id, charset, str(email_hash['froms'])
       avro_writer.append(email_hash)
     elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
       sys.stderr.write(status + "\n")
