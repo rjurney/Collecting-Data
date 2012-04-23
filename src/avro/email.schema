@@ -9,6 +9,11 @@
             "doc":""
         },
         {
+            "name":"thread_id",
+            "type":["null","string"],
+            "doc":""
+        },
+        {
             "name":"in_reply_to",
             "type": ["string", "null"]
         },
