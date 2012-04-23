@@ -65,10 +65,11 @@ def fetch_email(imap, id):
   if status != 'OK':
     return 'ERROR', {}, None
   else:
+    thread_id = data[0][0]
     raw_email = data[0][1]
   try:
     msg = email.message_from_string(raw_email)
-    avro_parts, charset = process_email(msg)
+    avro_parts, charset = process_email(msg, thread_id)
   except UnicodeDecodeError:
     return 'UNICODE', {}, charset
   except:
@@ -111,7 +112,7 @@ def parse_date(date_string):
   print iso_time
   return iso_time
 
-def process_email(msg):
+def process_email(msg, thread_id):
   
   subject = msg['Subject']
   body = get_body(msg)
@@ -133,6 +134,7 @@ def process_email(msg):
   print "."
   avro_parts = {
     'message_id': strip_brackets(msg['Message-ID']),
+    'thread_id': get_thread_id(thread_id),
     'in_reply_to': strip_brackets(msg['In-Reply-To']),
     'subject': subject,
     'date': parse_date(msg['Date']),
@@ -144,6 +146,12 @@ def process_email(msg):
     'reply_tos': parse_addrs(msg['Reply-To'])
   }
   return avro_parts, charset
+
+# '1011 (X-GM-THRID 1292412648635976421 RFC822 {6499}' --> 1292412648635976421
+def get_thread_id(thread_string):
+  p = re.compile('\d+ \(X-GM-THRID (.+) RFC822.*')
+  m = p.match(thread_string)
+  return m.group(1)
 
 def get_body(msg):
   body = ''
@@ -189,7 +197,7 @@ else:
   output_dir = init_directory(sys.argv[4])
 
 imap_folder = '[Gmail]/All Mail'
-schema_path = 'test.json'
+schema_path = '../avro/email.schema'
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -215,9 +223,8 @@ if mode == 'automatic':
       sys.stderr.write("IMAP RESET\n")
     else:
       continue
-
-avro_writer.close()
-
-imap.close()
-imap.logout()
+  
+  avro_writer.close()
+  imap.close()
+  imap.logout()
 
