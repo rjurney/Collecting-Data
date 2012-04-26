@@ -33,12 +33,16 @@ set mapred.reduce.tasks.speculative.execution false
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
-define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage('/me/elasticsearch-0.18.6/config/elasticsearch.yml', '/me/elasticsearch-0.18.6/plugins');
+define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage(
+       '/me/elasticsearch-0.18.6/config/elasticsearch.yml',
+       '/me/elasticsearch-0.18.6/plugins'
+);
 
 /* Nuke the email index, as we are about to replace it. */
 sh curl -XDELETE 'http://localhost:9200/email/email'
 
-emails = load '/me/tmp/emails' using AvroStorage();
+emails = load '/tmp/emails' using AvroStorage();
+emails = filter emails by message_id IS NOT NULL;
 --store emails into '/tmp/emails.json' using JsonStorage();
 store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
 
@@ -46,7 +50,7 @@ store emails into 'mongodb://localhost/agile_data.emails' using MongoStorage();
 --store emails into 'es://email/email?id=message_id&json=true&size=1000' using ElasticSearch();
 
 /* Verify that we get a record */
-sh curl -XGET 'http://localhost:9200/email/email/_search?q=hadoop&pretty=true&size=1'
+--sh curl -XGET 'http://localhost:9200/email/email/_search?q=hadoop&pretty=true&size=1'
 
 /* Now, for example: curl -XGET 'http://localhost:9200/email/email/_search?q=hadoop&pretty=true&size=1' 
    will return the top hit about hadoop.  Woohoo!  */
