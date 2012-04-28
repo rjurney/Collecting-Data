@@ -1,4 +1,4 @@
-/* Load ElasticSearch integration */
+/* Load ElasticSearch integration and define shortcut*/
 register /me/wonderdog/target/wonderdog-1.0-SNAPSHOT.jar;
 register /me/elasticsearch-0.18.6/lib/elasticsearch-0.18.6.jar;
 register /me/elasticsearch-0.18.6/lib/jline-0.9.94.jar;
@@ -9,34 +9,33 @@ register /me/elasticsearch-0.18.6/lib/lucene-core-3.5.0.jar;
 register /me/elasticsearch-0.18.6/lib/lucene-highlighter-3.5.0.jar;
 register /me/elasticsearch-0.18.6/lib/lucene-memory-3.5.0.jar;
 register /me/elasticsearch-0.18.6/lib/lucene-queries-3.5.0.jar;
+define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage(
+       '/me/elasticsearch-0.18.6/config/elasticsearch.yml',
+       '/me/elasticsearch-0.18.6/plugins'
+);
 
-/* Load Avro jars */
+/* Load Avro jars and define shortcut */
 register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
 register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
-
-/* Piggybank */
-register /me/pig/contrib/piggybank/java/piggybank.jar
+define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 
 /* MongoDB */
 register /me/mongo-hadoop/mongo-2.7.2.jar
 register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0-rc0.jar
 register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0-rc0.jar
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+
+/* Piggybank */
+register /me/pig/contrib/piggybank/java/piggybank.jar
 
 set default_parallel 5
 set pig.piggybank.storage.avro.bad.record.threshold 1.0
 set pig.piggybank.storage.avro.bad.record.min 5000
 set mapred.map.tasks.speculative.execution false
 set mapred.reduce.tasks.speculative.execution false
-
-define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
-define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
-define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage(
-       '/me/elasticsearch-0.18.6/config/elasticsearch.yml',
-       '/me/elasticsearch-0.18.6/plugins'
-);
 
 /* Nuke the email index, as we are about to replace it. */
 sh curl -XDELETE 'http://localhost:9200/email/email'
