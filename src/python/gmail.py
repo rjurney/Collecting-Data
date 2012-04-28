@@ -17,7 +17,7 @@ def does_exist(path_string, name):
 
 def main():
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'm:u:p:s:f:o:')
+    opts, args = getopt.getopt(sys.argv[1:], 'm:u:p:s:f:o:i:')
   except getopt.GetoptError, err:
     # print help information and exit:
     print "Error:" + str(err) # will print something like "option -a not recognized"
@@ -30,6 +30,7 @@ def main():
   schema_path = None #'../avro/email.schema'
   imap_folder = None #'[Gmail]/All Mail'
   output_path = None
+  single_id = None
   arg_check = dict()
   
   for o, a in opts:
@@ -57,6 +58,9 @@ def main():
     elif o in ("-o"):
       output_path = a
       arg_check[o] = 1
+    elif o in ("-i"):
+      single_id = a
+      arg_check[o] = a
     else:
       assert False, "unhandled option"
 
@@ -78,8 +82,17 @@ def main():
   status, count = slurper.init_folder(imap_folder)
   if(status == 'OK'):
     if(mode == 'automatic'):
-      print "Connected to folder " + imap_folder + " and downloading " + str(count) + " emails..."
-      slurper.slurp()  
+      # Grab a single message if its ID is specified - useful for debug
+      if(single_id):
+        s, a, c = slurper.fetch_email(single_id)
+        if(s == 'OK'):
+          print s, c, a
+        else:
+          print "Problem fetching email ID: " + single_id + " - " + s
+      # Otherwise grab them all
+      else:
+        print "Connected to folder " + imap_folder + " and downloading " + str(count) + " emails...\n"
+        slurper.slurp() 
       slurper.shutdown()
   else:
     print "Problem initializing imap connection."

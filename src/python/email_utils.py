@@ -33,6 +33,12 @@ class EmailUtils(object):
         charset = c
         break
     return charset
+  
+  # '1011 (X-GM-THRID 1292412648635976421 RFC822 {6499}' --> 1292412648635976421
+  def get_thread_id(self, thread_string):
+    p = re.compile('\d+ \(X-GM-THRID (.+) RFC822.*')
+    m = p.match(thread_string)
+    return m.group(1)
    
   def parse_addrs(self, addr_string):
     if(addr_string):

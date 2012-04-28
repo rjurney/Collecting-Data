@@ -51,13 +51,13 @@ class GmailSlurper(object):
   def init_folder(self, folder):
     self.imap_folder = folder
     status, count = self.imap.select(folder)      
-    print "FOLDER SELECT STATUS: " + status
+    print "Folder '" + str(folder) + "' SELECT status: " + status
     if(status == 'OK'):
       count = int(count[0])
       ids = range(1,count)
       ids.reverse()
       self.id_list = ids
-      print "FOLDER COUNT: " + str(count)
+      print "Folder '" + str(folder) + " has " + str(count) + "' emails...\n"
       self.folder_count = count
     return status, count
     
@@ -85,13 +85,23 @@ class GmailSlurper(object):
       encoded_email = data[0][1]
     try:
       charset = self.utils.get_charset(encoded_email)
-      raw_email = encoded_email.decode(charset)
-      thread_id = self.get_thread_id(raw_thread_id)
-      avro_record = {'thread_id': thread_id, 'raw_email': raw_email}
+
+      # RFC2822 says default charset is us-ascii, which often saves us when no charset is specified
+      if(charset):
+        pass
+      else:
+        charset = 'us-ascii'
+      
+      if(charset): # redundant, but saves our ass if we edit above
+        raw_email = encoded_email.decode(charset)
+        thread_id = self.utils.get_thread_id(raw_thread_id)
+        avro_record = {'thread_id': thread_id, 'raw_email': raw_email}
+      else:
+        return 'UNICODE', {}, charset
     except UnicodeDecodeError:
       return 'UNICODE', {}, charset
     except:
-      print "PARSE ERROR:" + sys.exc_info()[0]
+      print "PARSE ERROR: " + str(sys.exc_info()[0].__name__)
       return 'PARSE', {}, charset
       
     # Without a charset we pass bad chars to avro, and it dies. See AVRO-565.
@@ -99,12 +109,6 @@ class GmailSlurper(object):
       return status, avro_record, charset
     else:
       return 'CHARSET', {}, charset
-  
-  # '1011 (X-GM-THRID 1292412648635976421 RFC822 {6499}' --> 1292412648635976421
-  def get_thread_id(self, thread_string):
-    p = re.compile('\d+ \(X-GM-THRID (.+) RFC822.*')
-    m = p.match(thread_string)
-    return m.group(1)
   
   def shutdown(self):
     self.avro_writer.close()
@@ -134,7 +138,7 @@ class GmailSlurper(object):
         elif (status == 'ABORT' or status == 'TIMEOUT'):
           sys.stderr.write("resetting imap for " + status + "\n")
           stat, c = self.reset()
-          sys.stderr.write("IMAP RESET: ", stat, c, "\n")
+          sys.stderr.write("IMAP RESET: " + str(stat) + " " + str(c) + "\n")
         else:
           continue
   
