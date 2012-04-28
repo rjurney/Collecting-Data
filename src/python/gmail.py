@@ -15,7 +15,7 @@ is_email = Email()
 class GmailSlurper(object):
   
   def __init__(self):
-    """Method docstring."""
+    """This class downloads all emails in folders from your Gmail inbox and writes them as raw UTF-8 text in simple Avro records for further processing."""
 
   def init_directory(self, directory):
     if os.path.exists(directory):
@@ -62,7 +62,7 @@ class GmailSlurper(object):
       self.id_list = ids
       print "FOLDER COUNT: " + str(count)
       self.folder_count = count
-    return status
+    return status, count
     
   def fetch_email(self, email_id):
     def timeout_handler(signum, frame):
@@ -99,40 +99,11 @@ class GmailSlurper(object):
     except:
       return 'PARSE', {}, charset
       
-    #if not avro_parts.has_key('froms'):
-    #  return 'FROM', {}, charset
-      
     # Without a charset we pass bad chars to avro, and it dies. See AVRO-565.
     if charset:
       return status, avro_record, charset
     else:
       return 'CHARSET', {}, charset
-  
-  def parse_addrs(self, addr_string):
-    if addr_string:
-      addresses = email.utils.getaddresses([addr_string])
-      validated = []
-      for address in addresses:
-        address_pair = {'real_name': None, 'address': None}
-        if address[0]:
-          address_pair['real_name'] = address[0]
-        if is_email(address[1]):
-          address_pair['address'] = address[1]
-        if not address[0] and not is_email(address[1]):
-          pass
-        else:
-          validated.append(address_pair)
-      if(len(validated) == 0):
-        validated = None
-      return validated
-  
-  def strip_brackets(self, message_id):
-    return str(message_id).strip('<>')
-  
-  def parse_date(self, date_string):
-    tuple_time = email.utils.parsedate(date_string)
-    iso_time = time.strftime("%Y-%m-%dT%H:%M:%S", tuple_time)
-    return iso_time
   
   def get_charset(self, raw_email):
     if(type(raw_email)) is str:
@@ -146,52 +117,11 @@ class GmailSlurper(object):
         break
     return charset
   
-  def process_email(self, msg, thread_id):
-    subject = msg['Subject']
-    body = get_body(msg)
-    
-    # Without handling charsets, corrupt avros will get written
-    charsets = msg.get_charsets()
-    charset = None
-    for c in charsets:
-      if c != None:
-        charset = c
-        break
-    
-    if charset:
-      subject = subject.decode(charset)#.encode('utf-8')
-      body = body.decode(charset)#.encode('utf-8')
-    else:
-      return {}, charset
-    
-    avro_parts = {
-      'message_id': strip_brackets(msg['Message-ID']),
-      'thread_id': get_thread_id(thread_id),
-      'in_reply_to': strip_brackets(msg['In-Reply-To']),
-      'subject': subject,
-      'date': parse_date(msg['Date']),
-      'body': body,
-      'froms': parse_addrs(msg['From']),
-      'tos': parse_addrs(msg['To']),
-      'ccs': parse_addrs(msg['Cc']),
-      'bccs': parse_addrs(msg['Bcc']),
-      'reply_tos': parse_addrs(msg['Reply-To'])
-    }
-    return avro_parts, charset
-  
   # '1011 (X-GM-THRID 1292412648635976421 RFC822 {6499}' --> 1292412648635976421
   def get_thread_id(self, thread_string):
     p = re.compile('\d+ \(X-GM-THRID (.+) RFC822.*')
     m = p.match(thread_string)
     return m.group(1)
-  
-  def get_body(self, msg):
-    body = ''
-    if msg:
-      for part in msg.walk():
-        if part.get_content_type() == 'text/plain':
-          body += part.get_payload()
-    return body
   
   def shutdown(self):
     self.avro_writer.close()
@@ -216,19 +146,19 @@ class GmailSlurper(object):
           if((int(email_id) % 100) == 0):
             self.flush()
         elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
-          sys.stderr.write(status + "\n")
+          sys.stderr.write("Problem fetching email id " + str(email_id) + ": " + status + "\n")
           continue
         elif (status == 'ABORT' or status == 'TIMEOUT'):
           sys.stderr.write("resetting imap for " + status + "\n")
-          stat = self.reset()
-          sys.stderr.write("IMAP RESET: " + stat + "\n")
+          stat, c = self.reset()
+          sys.stderr.write("IMAP RESET: ", stat, c, "\n")
         else:
           continue
   
   def reset(self):
     self.init_imap(self.username, self.password)
-    status = self.init_folder(self.imap_folder)
-    return status
+    status, count = self.init_folder(self.imap_folder)
+    return status, count
   
   class TimeoutException(Exception): 
     """Indicates an operation timed out."""
@@ -304,10 +234,10 @@ def main():
   slurper = GmailSlurper()
   slurper.init_avro(output_path, 1, schema_path)
   slurper.init_imap(username, password)
-  status = slurper.init_folder(imap_folder)
+  status, count = slurper.init_folder(imap_folder)
   if(status == 'OK'):
     if(mode == 'automatic'):
-      print "Connected to folder " + imap_folder + "and downloading " + str(slurper.folder_count) + " emails..."
+      print "Connected to folder " + imap_folder + " and downloading " + str(count) + " emails..."
       slurper.slurp()  
       slurper.shutdown()
   else:
