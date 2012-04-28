@@ -200,7 +200,10 @@ class GmailSlurper(object):
 
   def write(self, record):
     self.avro_writer.append(record)
+  
+  def flush(self):
     self.avro_writer.flush()
+    print "Flushed avro writer..."
   
   def slurp(self):
     if(self.imap and self.imap_folder):
@@ -210,6 +213,8 @@ class GmailSlurper(object):
         if(status == 'OK' and charset and email_hash.has_key('thread_id') and email_hash['raw_email']):
           print email_id, charset, email_hash['thread_id']
           self.write(email_hash)
+          if((int(email_id) % 100) == 0):
+            self.flush()
         elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
           sys.stderr.write(status + "\n")
           continue
@@ -283,12 +288,19 @@ def main():
       arg_check[o] = 1
     else:
       assert False, "unhandled option"
-    
+
+  if(len(arg_check.keys()) >= 6):
+    pass
+  else:
+    usage('numargs')
+    sys.exit(2)
+  
   if(len(arg_check.keys()) == len(sys.argv[1:])/2):
     pass
   else:
-    usage()
+    usage('badargs')
     sys.exit(2)
+  
   slurper = GmailSlurper()
   slurper.init_avro(output_path, 1, schema_path)
   slurper.init_imap(username, password)
