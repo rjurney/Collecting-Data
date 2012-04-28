@@ -12,6 +12,7 @@ class EmailUtils(object):
   
   def __init__(self):
     """This class contains utilities for parsing and extracting structure from raw UTF-8 encoded emails"""
+    self.is_email = Email()
     
   def strip_brackets(self, message_id):
     return str(message_id).strip('<>')
@@ -20,6 +21,18 @@ class EmailUtils(object):
     tuple_time = email.utils.parsedate(date_string)
     iso_time = time.strftime("%Y-%m-%dT%H:%M:%S", tuple_time)
     return iso_time
+  
+  def get_charset(self, raw_email):
+    if(type(raw_email)) is str:
+      raw_email = email.message_from_string(raw_email)
+    else:
+      raw_email = raw_email
+    charset = None
+    for c in raw_email.get_charsets():
+      if c != None:
+        charset = c
+        break
+    return charset
    
   def parse_addrs(self, addr_string):
     if(addr_string):
@@ -29,9 +42,9 @@ class EmailUtils(object):
         address_pair = {'real_name': None, 'address': None}
         if address[0]:
           address_pair['real_name'] = address[0]
-        if is_email(address[1]):
+        if self.is_email(address[1]):
           address_pair['address'] = address[1]
-        if not address[0] and not is_email(address[1]):
+        if not address[0] and not self.is_email(address[1]):
           pass
         else:
           validated.append(address_pair)
@@ -80,5 +93,8 @@ class EmailUtils(object):
           body += part.get_payload()
     return body
       
-    #if not avro_parts.has_key('froms'):
-    #  return 'FROM', {}, charset
+  #if not avro_parts.has_key('froms'):
+  #  return 'FROM', {}, charset
+  
+  #msg = email.message_from_string(raw_email)
+  #avro_parts, charset = process_email(msg, thread_id)
