@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# This is a command line utility for slurping emails from gmail and storing them as avro documents.
+# I uses the GmailSlurper class, which in turn uses email utils.
+
 import os, sys, getopt
 from lepl.apps.rfc3696 import Email
 
