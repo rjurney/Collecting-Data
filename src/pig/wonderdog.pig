@@ -1,3 +1,6 @@
+/* Piggybank */
+register /me/pig/contrib/piggybank/java/piggybank.jar
+
 /* Load ElasticSearch integration and define shortcut*/
 register /me/wonderdog/target/wonderdog-1.0-SNAPSHOT.jar;
 register /me/elasticsearch-0.18.6/lib/elasticsearch-0.18.6.jar;
@@ -20,16 +23,15 @@ register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
+
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 
 /* MongoDB */
 register /me/mongo-hadoop/mongo-2.7.2.jar
 register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0-rc0.jar
 register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0-rc0.jar
-define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
-/* Piggybank */
-register /me/pig/contrib/piggybank/java/piggybank.jar
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
 set default_parallel 5
 set pig.piggybank.storage.avro.bad.record.threshold 1.0
