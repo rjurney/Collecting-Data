@@ -1,3 +1,5 @@
+#!/opt/local/bin/python
+
 import imaplib
 import sys, signal
 from avro import schema, datafile, io
@@ -98,9 +100,14 @@ class EmailUtils(object):
         if part.get_content_type() == 'text/plain':
           body += part.get_payload()
     return body
-      
-  #if not avro_parts.has_key('froms'):
-  #  return 'FROM', {}, charset
-  
-  #msg = email.message_from_string(raw_email)
-  #avro_parts, charset = process_email(msg, thread_id)
+    
+    #if not avro_parts.has_key('froms'):
+    #  return 'FROM', {}, charset
+    
+    #msg = email.message_from_string(raw_email)
+    #avro_parts, charset = process_email(msg, thread_id)
+
+for line in sys.stdin:
+  (thread_id, message_raw) = line.strip().split()
+  print "Message ID: %s" % (thread_id)
+

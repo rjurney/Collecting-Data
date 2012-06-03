@@ -1,3 +1,5 @@
+#!/opt/local/bin/python
+
 import imaplib
 import sys, signal
 from avro import schema, datafile, io
@@ -6,14 +8,21 @@ import email
 import inspect, pprint
 import getopt
 import time
-from lepl.apps.rfc3696 import Email
+#from lepl.apps.rfc3696 import Email
+
+class Email(object):
+  def __init__(self):
+    if len(email) > 7:
+      if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) != None:
+        return True
+    return False
 
 class EmailUtils(object):
   
   def __init__(self):
     """This class contains utilities for parsing and extracting structure from raw UTF-8 encoded emails"""
     self.is_email = Email()
-    
+  
   def strip_brackets(self, message_id):
     return str(message_id).strip('<>')
   
@@ -98,9 +107,9 @@ class EmailUtils(object):
         if part.get_content_type() == 'text/plain':
           body += part.get_payload()
     return body
-      
-  #if not avro_parts.has_key('froms'):
-  #  return 'FROM', {}, charset
-  
-  #msg = email.message_from_string(raw_email)
-  #avro_parts, charset = process_email(msg, thread_id)
+    
+    #if not avro_parts.has_key('froms'):
+    #  return 'FROM', {}, charset
+    
+    #msg = email.message_from_string(raw_email)
+    #avro_parts, charset = process_email(msg, thread_id)
