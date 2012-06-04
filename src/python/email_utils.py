@@ -62,7 +62,7 @@ class EmailUtils(object):
   
   def process_email(self, msg, thread_id):
     subject = msg['Subject']
-    body = get_body(msg)
+    body = self.get_body(msg)
     
     # Without handling charsets, corrupt avros will get written
     charsets = msg.get_charsets()
@@ -106,8 +106,3 @@ class EmailUtils(object):
     
     #msg = email.message_from_string(raw_email)
     #avro_parts, charset = process_email(msg, thread_id)
-
-for line in sys.stdin:
-  (thread_id, message_raw) = line.strip().split()
-  print "Message ID: %s" % (thread_id)
-
