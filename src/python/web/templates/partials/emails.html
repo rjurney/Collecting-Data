@@ -8,7 +8,7 @@
 {% macro display_emails(list) -%}
   {% if list and list is not string %}
     {% for email in list -%}
-      {{ display_value(email, 'ARRAY_ELEM') }}
+      {{ display_value(email, 'address') }}
     {% endfor -%}
   {% endif -%}
 {% endmacro -%}
@@ -32,7 +32,7 @@
     <tbody>
       {% for email in data['emails'] %}
       <tr>
-        <td>{{ display_emails(email['from']) }}</td>
+        <td>{{ display_emails(email['froms']) }}</td>
         <td>{{ common.display_link(email['message_id'], '/email', email['subject'])|safe }}</td>
         <td>{{ email['date'] }}</td>
       </tr>

@@ -14,12 +14,10 @@ register '/me/elasticsearch-0.18.6/lib/lucene-queries-3.5.0.jar';
 register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
 register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/contrib/piggybank/java/piggybank.jar
-register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
-register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 define ElasticSearch com.infochimps.elasticsearch.pig.ElasticSearchStorage();
 
-emails = load '/tmp/python3' using AvroStorage();
+emails = load '/me/tmp/emails' using AvroStorage();
 store emails into 'es://email/email?json=false&size=1000' using ElasticSearch('/me/elasticsearch-0.18.6/config/elasticsearch.yml', '/me/elasticsearch-0.18.6/plugins');
