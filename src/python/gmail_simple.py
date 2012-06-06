@@ -104,7 +104,10 @@ def parse_addrs(addr_string):
     return validated
 
 def strip_brackets(message_id):
-  return str(message_id).strip('<>')
+  if(message_id != None):
+    return str(message_id).strip('<>')
+  else:
+    return None
 
 def parse_date(date_string):
   tuple_time = email.utils.parsedate(date_string)
@@ -161,6 +164,9 @@ def get_body(msg):
         body += part.get_payload()
   return body
 
+def usage():
+  print """Usage: gmail.py <mode: interactive|automatic> <username@gmail.com> <password> <output_directory>"""
+
 class TimeoutException(Exception): 
   """Indicates an operation timed out."""
   pass
@@ -176,7 +182,7 @@ if (len(sys.argv) < 5):
   env_set = 0
   # Count that we have full environment variables setup
   for key in ['GMAIL_USERNAME', 'GMAILPASS', 'OUTPUTDIR']:
-    if os.environ[key]:
+    if os.environ.has_key(key):
       env_set += 1
   # If we have complete ENV defaults, we can run...
   if env_set == 3:
@@ -187,7 +193,7 @@ if (len(sys.argv) < 5):
     print "Interactive IMAP mode setup..."
   # If we don't have ENV, we must have command line arguments
   else:
-    print """Usage: gmail.py <mode: interactive|automatic> <username@gmail.com> <password> <output_directory>"""
+    usage()
     exit(0)
 # If there are enough command line variables, set em
 else:
