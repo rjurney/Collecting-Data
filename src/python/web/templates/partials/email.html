@@ -24,7 +24,7 @@
   <div class="row">
     {{ display_label(name) }}
     {% for email in email[key] -%}
-      {{ display_value(email, 'ARRAY_ELEM') }}
+      {{ display_value(email, name.lower) }}
     {% endfor -%}
   </div>
   {% endif -%}
@@ -46,7 +46,7 @@
     <div class="row">
       {{ display_label(name) }}
       {% for email in email[key] -%}
-        {{ common.display_link('<' + email['ARRAY_ELEM'] + '>', '/email', email['ARRAY_ELEM'])|safe }}
+        {{ common.display_link('<' + email + '>', '/email', email)|safe }}
       {% endfor %}
     </div>
   {% endif %}

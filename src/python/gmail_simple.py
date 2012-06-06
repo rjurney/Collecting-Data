@@ -104,7 +104,7 @@ def parse_addrs(addr_string):
     return validated
 
 def strip_brackets(message_id):
-  if(message_id != None):
+  if(message_id != None and message_id != "None"):
     return str(message_id).strip('<>')
   else:
     return None
@@ -135,10 +135,15 @@ def process_email(msg, thread_id):
     return {}, charset
   
   print "."
+  
+  in_reply_to = strip_brackets(msg['In-Reply-To'])
+  if in_reply_to == "None":
+    in_reply_to = None
+  
   avro_parts = {
     'message_id': strip_brackets(msg['Message-ID']),
     'thread_id': get_thread_id(thread_id),
-    'in_reply_to': strip_brackets(msg['In-Reply-To']),
+    'in_reply_to': in_reply_to,
     'subject': subject,
     'date': parse_date(msg['Date']),
     'body': body,
