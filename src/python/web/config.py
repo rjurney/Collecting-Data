@@ -1,3 +1,3 @@
 # config.py - a configuration file for index.py
-EMAIL_RANGE = 30
+EMAIL_RANGE = 26
 ELASTIC_URL = 'http://localhost:9200/'
