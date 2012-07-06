@@ -1,6 +1,14 @@
 #!/usr/bin/python
 
 import time
+import email
+import datetime
+
+@outputSchema("isodatetime:chararray")
+def parse_date(self, date_string):
+  tuple_time = email.utils.parsedate(date_string)
+  iso_time = time.strftime("%Y-%m-%dT%H:%M:%S", tuple_time)
+  return iso_time
 
 @outputSchema("word:chararray")
 def strip(word):  

@@ -147,7 +147,7 @@ def process_email(msg, thread_id):
     'subject': subject,
     'date': parse_date(msg['Date']),
     'body': body,
-    'froms': parse_addrs(msg['From']),
+    'from': parse_addrs(msg['From'])[0],
     'tos': parse_addrs(msg['To']),
     'ccs': parse_addrs(msg['Cc']),
     'bccs': parse_addrs(msg['Bcc']),

@@ -16,6 +16,12 @@ DEFINE test_filter(original, condition) RETURNS result {
   $result = compare_totals($original, filtered);
 };
 
+/* Get from/to/cc/bccs individually from a bag of addresses */
+DEFINE get_addresses(in_relation, group_name, field_name) RETURNS addresses {
+  between = foreach in_relation generate FLATTEN($group_name) as ($field_name, b);
+  $addresses = foreach between generate $field_name as $field_name;
+};
+
 /* Given a document relation with a text column and a unique id column, 
    count the number of times each word occurs in each document, and divide that by
    the occurrence of the word among all documents */

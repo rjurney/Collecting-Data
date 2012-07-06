@@ -19,15 +19,24 @@ set default_parallel 5
 set mapred.map.tasks.speculative.execution false
 set mapred.reduce.tasks.speculative.execution false
 
+import 'macros.pig';
+
 emails = load '/me/tmp/emails_big' using AvroStorage();
 emails = filter emails by message_id IS NOT NULL;
 
-senders = foreach emails generate FLATTEN(froms) as (address, name), message_id;
-tos = foreach emails generate FLATTEN(tos) as (address, name), message_id;
-ccs = foreach emails generate FLATTEN(ccs) as (address, name), message_id;
-bccs = foreach emails generate FLATTEN(bccs) as (address, name), message_id;
-email_addresses = union senders, tos, ccs, bccs;
-email_addresses = foreach email_addresses generate address as email_address, message_id;
+/* Get a count of records, return the name of the relation and . */
+/*
 
-ids_per_email = group email_addresses by email_address;
-ids_per_email = group email_addresses by message_id;
+Our macro in macros.pig is:
+
+DEFINE get_addresses(in_relation, group_name, field_name) RETURNS addresses {
+  between = foreach in_relation generate FLATTEN($group_name) as ($field_name, b);
+  $addresses = foreach between generate $field_name as $field_name;
+};
+
+*/
+
+senders = get_addresses(emails, froms, from_address);
+tos = get_addresses(emails, tos, to_address);
+ccs = get_addresses(emails, ccs, cc_address);
+

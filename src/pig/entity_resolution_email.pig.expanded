@@ -1,0 +1,22 @@
+register '/me/pig/build/ivy/lib/Pig/avro-1.5.3.jar';
+register '/me/pig/build/ivy/lib/Pig/json-simple-1.1.jar';
+register '/me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar';
+register '/me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar';
+register '/me/pig/build/ivy/lib/Pig/joda-time-1.6.jar';
+define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
+register '/me/mongo-hadoop/mongo-2.7.3.jar';
+register '/me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0.jar';
+register '/me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0.jar';
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+register '/me/pig/contrib/piggybank/java/piggybank.jar';
+set default_parallel 5
+set mapred.map.tasks.speculative.execution false
+set mapred.reduce.tasks.speculative.execution false
+emails = load '/me/tmp/emails_big' USING AvroStorage();
+emails = filter emails BY (message_id IS NOT NULL);
+macro_get_addresses_between_0 = foreach macro_get_addresses_in_relation_0 generate FLATTEN(froms)  AS (from_address, b);
+senders = foreach macro_get_addresses_between_0 generate from_address AS from_address;
+macro_get_addresses_between_1 = foreach macro_get_addresses_in_relation_1 generate FLATTEN(tos)  AS (to_address, b);
+tos = foreach macro_get_addresses_between_1 generate to_address AS to_address;
+macro_get_addresses_between_2 = foreach macro_get_addresses_in_relation_2 generate FLATTEN(ccs)  AS (cc_address, b);
+ccs = foreach macro_get_addresses_between_2 generate cc_address AS cc_address;

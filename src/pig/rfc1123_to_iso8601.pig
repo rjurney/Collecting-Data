@@ -3,9 +3,9 @@ register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/contrib/piggybank/java/piggybank.jar
 register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
-register /me/mongo-hadoop/mongo-2.3.jar
-register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0-SNAPSHOT.jar
-register /me/mongo-hadoop/pig/target/mongo-pig-1.0-SNAPSHOT.jar
+register /me/mongo-hadoop/mongo-2.7.3.jar
+register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0.jar
+register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0.jar 
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
@@ -21,7 +21,7 @@ set aggregate.warning 'true';
 rmf /tmp/sent_distributions.avro
 
 /* Get email address pairs for each type of connection, and union them together */
-emails = load '/me/tmp/again_inbox' using AvroStorage();
+emails = load '/me/tmp/emails_big' using AvroStorage();
 filtered = filter emails by (from is not null) and (date is not null);
 
 flat = foreach filtered generate flatten(from) as from, 
