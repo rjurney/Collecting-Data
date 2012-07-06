@@ -132,8 +132,7 @@ class GmailSlurper(object):
         if(status == 'OK' and charset and 'thread_id' in email_hash and 'froms' in email_hash):
           print email_id, charset, email_hash['thread_id']
           self.write(email_hash)
-          self.flush()
-          if((int(email_id) % 10) == 0):
+          if((int(email_id) % 1000) == 0):
             self.flush()
         elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
           sys.stderr.write("Problem fetching email id " + str(email_id) + ": " + status + "\n")
