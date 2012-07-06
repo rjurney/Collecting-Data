@@ -58,9 +58,10 @@ class EmailUtils(object):
         validated = None
       return validated
   
-  def process_email(self, msg, thread_id):
+  def process_email(self, raw_email, thread_id):
+    msg = email.message_from_string(raw_email)
     subject = msg['Subject']
-    body = get_body(msg)
+    body = self.get_body(msg)
     
     # Without handling charsets, corrupt avros will get written
     charsets = msg.get_charsets()
@@ -69,26 +70,25 @@ class EmailUtils(object):
       if c != None:
         charset = c
         break
-    
+    print charset
     if charset:
       subject = subject.decode(charset)#.encode('utf-8')
       body = body.decode(charset)#.encode('utf-8')
     else:
       return {}, charset
-    
-    avro_parts = {
-      'message_id': strip_brackets(msg['Message-ID']),
-      'thread_id': get_thread_id(thread_id),
-      'in_reply_to': strip_brackets(msg['In-Reply-To']),
+    avro_parts = dict({
+      'message_id': self.strip_brackets(msg['Message-ID']),
+      'thread_id': thread_id,
+      'in_reply_to': self.strip_brackets(msg['In-Reply-To']),
       'subject': subject,
-      'date': parse_date(msg['Date']),
+      'date': self.parse_date(msg['Date']),
       'body': body,
-      'froms': parse_addrs(msg['From']),
-      'tos': parse_addrs(msg['To']),
-      'ccs': parse_addrs(msg['Cc']),
-      'bccs': parse_addrs(msg['Bcc']),
-      'reply_tos': parse_addrs(msg['Reply-To'])
-    }
+      'froms': self.parse_addrs(msg['From']),
+      'tos': self.parse_addrs(msg['To']),
+      'ccs': self.parse_addrs(msg['Cc']),
+      'bccs': self.parse_addrs(msg['Bcc']),
+      'reply_tos': self.parse_addrs(msg['Reply-To'])
+    })
     return avro_parts, charset
   
   def get_body(self, msg):

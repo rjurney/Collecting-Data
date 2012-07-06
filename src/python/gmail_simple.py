@@ -225,6 +225,8 @@ if mode == 'automatic':
     if(status == 'OK' and charset):
       print id, charset, str(email_hash['froms'])
       avro_writer.append(email_hash)
+      if i % 1000:
+        avro_writer.flush()
     elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
       sys.stderr.write(status + "\n")
       continue

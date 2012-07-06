@@ -68,7 +68,7 @@ class GmailSlurper(object):
     signal.signal(signal.SIGALRM, timeout_handler) 
     signal.alarm(30) # triger alarm in 30 seconds
     
-    avro_record = {}
+    avro_record = dict()
     status = 'FAIL'
     try:
       status, data = self.imap.fetch(str(email_id), '(X-GM-THRID RFC822)') # Gmail's X-GM-THRID will get the thread of the message
@@ -83,26 +83,27 @@ class GmailSlurper(object):
     else:
       raw_thread_id = data[0][0]
       encoded_email = data[0][1]
-    try:
-      charset = self.utils.get_charset(encoded_email)
+    #try:
+    charset = self.utils.get_charset(encoded_email)
 
-      # RFC2822 says default charset is us-ascii, which often saves us when no charset is specified
-      if(charset):
-        pass
-      else:
-        charset = 'us-ascii'
-      
-      if(charset): # redundant, but saves our ass if we edit above
-        raw_email = encoded_email.decode(charset)
-        thread_id = self.utils.get_thread_id(raw_thread_id)
-        avro_record = {'thread_id': thread_id, 'raw_email': raw_email}
-      else:
-        return 'UNICODE', {}, charset
-    except UnicodeDecodeError:
+    # RFC2822 says default charset is us-ascii, which often saves us when no charset is specified
+    if(charset):
+      pass
+    else:
+      charset = 'us-ascii'
+    
+    if(charset): # redundant, but saves our ass if we edit above
+      raw_email = encoded_email.decode(charset)
+      thread_id = self.utils.get_thread_id(raw_thread_id)
+      avro_record, charset = self.utils.process_email(raw_email, thread_id)
+      print avro_record
+    else:
       return 'UNICODE', {}, charset
-    except:
-      print "PARSE ERROR: " + str(sys.exc_info()[0].__name__)
-      return 'PARSE', {}, charset
+    # except UnicodeDecodeError:
+    #   return 'UNICODE', {}, charset
+    # except:
+    #   print "PARSE ERROR: " + str(sys.exc_info()[0].__name__)
+    #   return 'PARSE', {}, charset
       
     # Without a charset we pass bad chars to avro, and it dies. See AVRO-565.
     if charset:
@@ -125,12 +126,14 @@ class GmailSlurper(object):
   def slurp(self):
     if(self.imap and self.imap_folder):
       for email_id in self.id_list:
-        status, email_hash, charset = self.fetch_email(email_id)
-        
-        if(status == 'OK' and charset and email_hash.has_key('thread_id') and email_hash['raw_email']):
+        (status, email_hash, charset) = self.fetch_email(email_id)
+        print status, charset
+        print email_hash
+        if(status == 'OK' and charset and 'thread_id' in email_hash and 'froms' in email_hash):
           print email_id, charset, email_hash['thread_id']
           self.write(email_hash)
-          if((int(email_id) % 100) == 0):
+          self.flush()
+          if((int(email_id) % 10) == 0):
             self.flush()
         elif(status == 'ERROR' or status == 'PARSE' or status == 'UNICODE' or status == 'CHARSET' or status =='FROM'):
           sys.stderr.write("Problem fetching email id " + str(email_id) + ": " + status + "\n")
@@ -140,7 +143,7 @@ class GmailSlurper(object):
           stat, c = self.reset()
           sys.stderr.write("IMAP RESET: " + str(stat) + " " + str(c) + "\n")
         else:
-          continue
+          exit()
   
   def reset(self):
     self.init_imap(self.username, self.password)

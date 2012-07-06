@@ -30,8 +30,8 @@ def main():
   mode = None
   username = None
   password = None
-  schema_path = None #'../avro/email.schema'
-  imap_folder = None #'[Gmail]/All Mail'
+  schema_path = None or '../avro/email.schema'
+  imap_folder = None or '[Gmail]/All Mail'
   output_path = None
   single_id = None
   arg_check = dict()

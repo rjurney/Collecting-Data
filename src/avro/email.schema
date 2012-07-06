@@ -30,25 +30,36 @@
             "type": ["string", "null"]
         },
         {
-            "name":"from",
+            "name":"froms",
             "type":
-            {
-                "type":"record",
-                "name":"from",
-                "fields":
-                [
-                    {
-                        "name":"real_name",
-                        "type":["null","string"],
-                        "doc":""
-                    },
-                    {
-                        "name":"address",
-                        "type":["null","string"],
-                        "doc":""
-                    }
-                ]
-            },
+            [
+                "null",
+                {
+                    "type":"array",
+                    "items":
+                    [
+                        "null",
+                        {
+                            "type":"record",
+                            "name":"from",
+                            "fields":
+                            [
+                                {
+                                    "name":"real_name",
+                                    "type":["null","string"],
+                                    "doc":""
+                                },
+                                {
+                                    "name":"address",
+                                    "type":["null","string"],
+                                    "doc":""
+                                }
+                            ]
+                        }
+                    
+                    ]
+                }
+            ],
             "doc":""
         },
         {
