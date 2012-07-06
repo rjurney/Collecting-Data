@@ -45,7 +45,7 @@
   {% if email[key] %}
     <div class="row">
       {{ display_label(name) }}
-      {{ common.display_link('<' + email[key] + '>', '/email', email[key])|safe }}
+      {{ common.display_link(email[key], '/email', email[key])|safe }}
     </div>
   {% endif %}
 {% endmacro %}

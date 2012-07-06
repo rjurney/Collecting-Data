@@ -4,7 +4,9 @@
 from flask import Flask, render_template, request, redirect
 
 # MongoDB and BSON util
-from pymongo import Connection, json_util
+import bson
+import pymongo
+from pymongo import Connection
 
 # ElasticSearch
 import json, pyelasticsearch
@@ -13,7 +15,9 @@ import json, pyelasticsearch
 import config, helpers
 from helpers import *
 
+# Setup Flask
 app = Flask(__name__)
+
 connection = Connection()
 db = connection.agile_data
 emaildb = db.emails
