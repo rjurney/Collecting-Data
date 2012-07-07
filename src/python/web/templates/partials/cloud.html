@@ -1,8 +1,13 @@
+<!-- Extend our site layout -->
+{% extends "layout.html" %}
+
+{% block content -%}
 <h2 style="margin-bottom: 5px;">Some friends to get you started...</h2>
 <ul class="nav nav-pills">
-  <% @friends.each do |d| -%>
-  <li class="active">
-    <a style="margin: 3px;" href="/sent_distributions/<%= d['to'] -%>"><%= d['to'] -%></a>
+  {% for d in data %}
+  <li class="active">{{ d['message_id'] }}
+    <a style="margin: 3px;">{{ d['message_id'] }}</a>
   </li>
-  <% end -%>
+  {% endfor %}
 </ul>
+{% endblock -%}

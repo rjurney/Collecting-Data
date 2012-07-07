@@ -70,25 +70,31 @@ def search_email(query, offset1, offset2):
   data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/emails/search/', 'query': query}
   return render_template('partials/emails.html', data=data)
 
+@app.route("/address/<string:email_address>")
+def address(email_address):
+  record = db['ids_per_address'].find_one({'email_address': email_address})
+  data = {'values': record['email_address_messages'], 'fields': ['email_address', 'message_id'], 'email_address': email_address, 'nav_path': '/address/'}
+  return render_template('partials/cloud.html', data=data)
+
 # default_offsets={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE, 'email': False}
 # @app.route("/address/<string:email>", defaults=default_offsets)
 # @app.route("/address/<string:email>/", defaults=default_offsets)
-@app.route("/address/<string:email>/<int:offset1>/<int:offset2>")
-def address(email, offset1, offset2):
-  print "email: " + str(email)
-  # if email == False:
-  #   email = request.args.get('email')
-  #   return redirect('/address/' + email + '/' + str(offset1) + '/' + str(offset2))
-  doc_count = offset2 - offset1
-  query = {'query': {'match_all': {}}, 'facets': {'froms': {'from': {'address': email}}}}
-  results = elastic.search(query, {'from': offset1, 'size': doc_count, 'sort': {'date': {'order': 'desc'}}}, indexes=["email"])
-  print "results"
-  print results
-  emails = process_results(results)
-  nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
-  data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/address/' + email + '/'}
-  #print data
-  return render_template('partials/emails.html', data=data)
+# @app.route("/address/<string:email>/<int:offset1>/<int:offset2>")
+# def address(email, offset1, offset2):
+#   print "email: " + str(email)
+#   # if email == False:
+#   #   email = request.args.get('email')
+#   #   return redirect('/address/' + email + '/' + str(offset1) + '/' + str(offset2))
+#   doc_count = offset2 - offset1
+#   query = {'query': {'match_all': {}}, 'facets': {'froms': {'from': {'address': email}}}}
+#   results = elastic.search(query, {'from': offset1, 'size': doc_count, 'sort': {'date': {'order': 'desc'}}}, indexes=["email"])
+#   print "results"
+#   print results
+#   emails = process_results(results)
+#   nav_offsets = get_offsets(offset1, offset2, config.EMAIL_RANGE)
+#   data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/address/' + email + '/'}
+#   #print data
+#   return render_template('partials/emails.html', data=data)
 
 if __name__ == "__main__":
   app.run(debug=True)
