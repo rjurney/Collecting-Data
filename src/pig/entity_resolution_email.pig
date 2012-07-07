@@ -19,15 +19,29 @@ set default_parallel 5
 set mapred.map.tasks.speculative.execution false
 set mapred.reduce.tasks.speculative.execution false
 
+/* Clean out old Mongo stores */
+/* sh mongo agile_data --quiet --eval 'printjson(db.ids_per_address.drop());'
+sh mongo agile_data --quiet --eval 'db.addresses_per_id.drop();' */
+
+/* Load emails, filter null message_ids */
 emails = load '/me/tmp/emails_big' using AvroStorage();
 emails = filter emails by message_id IS NOT NULL;
 
-senders = foreach emails generate FLATTEN(froms) as (address, name), message_id;
-tos = foreach emails generate FLATTEN(tos) as (address, name), message_id;
-ccs = foreach emails generate FLATTEN(ccs) as (address, name), message_id;
-bccs = foreach emails generate FLATTEN(bccs) as (address, name), message_id;
-email_addresses = union senders, tos, ccs, bccs;
-email_addresses = foreach email_addresses generate address as email_address, message_id;
+/* Split out from/to/cc/bcc with message_id and then merge via UNION. */
+senders = foreach emails generate FLATTEN(froms) as (real_name, address), message_id;
+tos = foreach emails generate FLATTEN(tos) as (real_name, address), message_id;
+ccs = foreach emails generate FLATTEN(ccs) as (real_name, address), message_id;
+bccs = foreach emails generate FLATTEN(bccs) as (real_name, address), message_id;
+email_address_messages = union senders, tos, ccs, bccs;
 
-ids_per_email = group email_addresses by email_address;
-ids_per_email = group email_addresses by message_id;
+/* Just emails and message_ids for now, filter nulls */
+email_address_messages = foreach email_address_messages generate address as email_address, message_id;
+email_address_messages = filter email_address_messages by email_address IS NOT NULL AND email_address != '';
+
+/* Package our ids for publishing to MongoDB */
+ids_per_address= group email_address_messages by email_address;
+addresses_per_id = group email_address_messages by message_id;
+
+/* Kepp collection real_names consistent with Pig relation real_names to avoid confusion. */
+store ids_per_address into 'mongodb://localhost/agile_data.ids_per_address' using MongoStorage();
+store addresses_per_id into 'mongodb://localhost/agile_data.addresses_per_id' using MongoStorage();
