@@ -2,8 +2,8 @@
 register /me/wonderdog/target/wonderdog*.jar;
 register /me/elasticsearch-0.18.6/lib/*.jar; /* */
 
-%default es.config '/me/elasticsearch-0.18.6/config/elasticsearch.yml'
-%default es.path.plugins '/me/elasticsearch-0.18.6/plugins'
+set es.config '/me/elasticsearch-0.18.6/config/elasticsearch.yml'
+set es.path.plugins '/me/elasticsearch-0.18.6/plugins'
 
 /* Load Avro jars and define shortcut */
 register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
