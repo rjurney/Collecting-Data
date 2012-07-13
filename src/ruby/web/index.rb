@@ -39,7 +39,7 @@ get '/to_from_subject' do
 end
 
 get '/sent_distributions/:email' do |@email|
-  raw_data = mongo_fetch_one('sentdist', {:email => @email})['sent_dist']
+  raw_data = mongo_fetch_one('sent_dist', {:email => @email})['sent_dist']
 
   @data = (0..23).map do |hour|
     key = to_key(hour)

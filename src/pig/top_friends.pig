@@ -11,12 +11,13 @@ set aggregate.warning 'true';
 
 rmf /tmp/top_friends.avro
 
-emails = load '/me/tmp/again_inbox' using AvroStorage();
+emails = load '/me/tmp/thu_emails' using AvroStorage();
 
-emails = filter emails by (from is not null);
-tos = foreach emails generate flatten(from) as from, flatten(to) as to;
-ccs = foreach emails generate flatten(from) as from, flatten(cc) as cc;
-pairs = union tos, ccs;
+emails = filter emails by (froms is not null);
+tos = foreach emails generate flatten(froms.address) as from, flatten(tos.address) as to;
+ccs = foreach emails generate flatten(froms.address) as from, flatten(ccs.address) as to;
+bccs = foreach emails generate flatten(froms.address) as from, flatten(bccs.address) as to;
+pairs = union tos, ccs, bccs;
 counts = foreach (group pairs by (from, to)) generate flatten(group) as (from, to), COUNT(pairs) as total;
 
 top_pairs = foreach (group counts by from) {

@@ -2,11 +2,10 @@
 {% extends "layout.html" %}
 
 {% block content -%}
-<h2 style="margin-bottom: 5px;">Some friends to get you started...</h2>
 <ul class="nav nav-pills">
-  {% for d in data %}
-  <li class="active">{{ d['message_id'] }}
-    <a style="margin: 3px;">{{ d['message_id'] }}</a>
+  {% for d in data['values'] %}
+  <li class="active">
+    <a style="margin: 3px;">{{ d[data['fields'][0]] }}</a>
   </li>
   {% endfor %}
 </ul>

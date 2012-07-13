@@ -8,8 +8,6 @@ set es.path.plugins '/me/elasticsearch-0.18.6/plugins'
 /* Load Avro jars and define shortcut */
 register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
 register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
-register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
-register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 

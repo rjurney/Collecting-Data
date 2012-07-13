@@ -35,6 +35,13 @@ def sent_counts(ego1, ego2):
   data['values'] = sent_count['_id'], sent_count['ego1'], sent_count['ego2'], sent_count['total']
   return render_template('table.html', data=data)
 
+@app.route("/sent_distributions/<email_address>")
+def sent_distributions(email_address):
+  data = db.sent_dist.find_one({'email': email_address})
+  chart_json = json.dumps(data['sent_dist'])
+  print chart_json
+  return render_template('partials/distribution.html', data=data, chart_json=chart_json)
+
 @app.route("/email/<message_id>")
 def email(message_id):
   email = emaildb.find_one({"message_id": message_id})
@@ -70,10 +77,26 @@ def search_email(query, offset1, offset2):
   data = {'emails': emails, 'nav_offsets': nav_offsets, 'nav_path': '/emails/search/', 'query': query}
   return render_template('partials/emails.html', data=data)
 
+"""
+Email Address Entity
+"""
 @app.route("/address/<string:email_address>")
 def address(email_address):
-  record = db['ids_per_address'].find_one({'email_address': email_address})
-  data = {'values': record['email_address_messages'], 'fields': ['email_address', 'message_id'], 'email_address': email_address, 'nav_path': '/address/'}
+  sent_dist = db.sent_dist.find_one({'email': email_address})
+  chart_json = json.dumps(sent_dist['sent_dist'])
+  top_friends = db.top_friends.find_one({'email': email_address})['top_20'][0:6]
+  return render_template('partials/address.html', email_address=email_address,
+                                                       sent_dist=sent_dist, 
+                                                       chart_json=chart_json, 
+                                                       top_friends=top_friends)
+
+"""
+Display all email addresses associated with a message ID.
+"""
+@app.route("/address_cloud/<string:message_id>")
+def address_cloud(message_id):
+  record = db['addresses_per_id'].find_one({'message_id': message_id})
+  data = {'values': record['email_address_messages'], 'fields': ['email_address']}
   return render_template('partials/cloud.html', data=data)
 
 # default_offsets={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE, 'email': False}

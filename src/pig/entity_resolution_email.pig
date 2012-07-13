@@ -19,9 +19,11 @@ set default_parallel 5
 set mapred.map.tasks.speculative.execution false
 set mapred.reduce.tasks.speculative.execution false
 
-/* Clean out old Mongo stores */
-/* sh mongo agile_data --quiet --eval 'printjson(db.ids_per_address.drop());'
-sh mongo agile_data --quiet --eval 'db.addresses_per_id.drop();' */
+/* Clean out old Mongo stores - sh calls don't work at the moment. */
+/* 
+sh mongo agile_data --quiet --eval 'db.ids_per_address.drop();'
+sh mongo agile_data --quiet --eval 'db.addresses_per_id.drop();' 
+*/
 
 /* Load emails, filter null message_ids */
 emails = load '/me/tmp/emails_big' using AvroStorage();
@@ -38,9 +40,11 @@ email_address_messages = union senders, tos, ccs, bccs;
 email_address_messages = foreach email_address_messages generate address as email_address, message_id;
 email_address_messages = filter email_address_messages by email_address IS NOT NULL AND email_address != '';
 
-/* Package our ids for publishing to MongoDB */
+/* Package our ids for publishing to MongoDB, note the second step where we assign schema names to the group */
 ids_per_address= group email_address_messages by email_address;
+ids_per_address = foreach ids_per_address generate group as email_address, email_address_messages as email_address_messages;
 addresses_per_id = group email_address_messages by message_id;
+addresses_per_id = foreach addresses_per_id generate group as message_id, email_address_messages as email_address_messages;
 
 /* Kepp collection real_names consistent with Pig relation real_names to avoid confusion. */
 store ids_per_address into 'mongodb://localhost/agile_data.ids_per_address' using MongoStorage();
