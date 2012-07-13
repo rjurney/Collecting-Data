@@ -43,12 +43,46 @@
     <div id="d3div" style="color: white;"></div>
   </div>
 </div>
+<script type="text/javascript" src="/static/jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
-var data = {{ chart_json|safe }};
+// Get "00" - "23"
+function makeHourRange(num) {
+  return num < 10 ? "0" + num.toString() : num.toString();
+}
+
+function fillBlanks(rawData) {
+  var hourRange = d3.range(0,24);
+  var ourData = Array();
+  for (hour in hourRange)
+  {
+    var hourString = makeHourRange(hour);
+    var found = false;
+    for(x in rawData)
+    {
+      if(rawData[x]['sent_hour'] == hourString)
+      {
+        found = true;
+        break;
+      }
+    }
+    if(found == true)
+    {
+      ourData.push(rawData[x]);
+    }
+    else
+    {
+      ourData.push({'sent_hour': hourString, 'total': 0})
+    }
+  }
+  return ourData;
+}
+
+var rawData = {{ chart_json|safe }};
+var filledData = fillBlanks(rawData);
 var w = 20, h = 465;
 
 // Max is used to map our values to the Y axis
-var max = d3.max(data, function(d) { return d['total']; });
+var max = d3.max(rawData, function(d) { return d['total']; });
 
 // X range
 var x = d3.scale.linear()
@@ -63,12 +97,12 @@ var y = d3.scale.linear()
 // Create the chart element
 var chart = d3.select("div#d3div").append("svg")
     .attr("class", "chart")
-    .attr("width", w * data.length - 1)
+    .attr("width", w * rawData.length - 1)
     .attr("height", h + 20);
 
 // Draw the bars
 chart.selectAll("rect")
-    .data(data)
+    .data(rawData)
     .enter().append("rect")
     .attr("x", function(d, i) { return x(i) - .5; })
     .attr("y", function(d) { return h - y(d.total) - .5; })
@@ -86,7 +120,7 @@ chart.selectAll("rect")
 
 // Labels for each bar - which hour it represents
 chart.selectAll("hours")
-    .data(data)
+    .data(rawData)
     .enter().append("text")
     .attr("x", function(d, i) { return x(i) + w/2 - 0.5; })
     .attr("y", h + 11)
@@ -96,7 +130,7 @@ chart.selectAll("hours")
 
 // Label our values
 chart.selectAll("values")
-    .data(data)
+    .data(rawData)
     .enter().append("text")
     .attr("x", function(d, i) { return x(i) + w/2 - 0; })
     .attr("y", function(d) { return h - y(d.total) - 2; })

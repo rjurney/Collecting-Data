@@ -1,3 +1,6 @@
+/* Piggybank */
+register /me/pig/contrib/piggybank/java/piggybank.jar
+
 /* Load ElasticSearch integration and define shortcut*/
 register /me/wonderdog/target/wonderdog*.jar;
 register /me/elasticsearch-0.18.6/lib/*.jar; /* */
@@ -9,16 +12,22 @@ set es.path.plugins '/me/elasticsearch-0.18.6/plugins'
 register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
 register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/build/ivy/lib/Pig/joda-time-1.6.jar
+
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 
 /* MongoDB */
+<<<<<<< HEAD
 register /me/mongo-hadoop/mongo-2.7.3.jar
 register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0.jar
 register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0.jar
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+=======
+register /me/mongo-hadoop/mongo-2.7.2.jar
+register /me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0-rc0.jar
+register /me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0-rc0.jar
+>>>>>>> b0e60b6686e631dc34caae5b4ad0e85fcc12f911
 
-/* Piggybank */
-register /me/pig/contrib/piggybank/java/piggybank.jar
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
 set default_parallel 5
 set mapred.map.tasks.speculative.execution false

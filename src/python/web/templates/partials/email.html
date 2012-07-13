@@ -18,13 +18,19 @@
   {% endif -%}
 {% endmacro -%}
 
+{% macro format_email(address, real_name) -%}
+  <a href="/address/{{ address }}">"{{ real_name }}" &lt;{{ address }}&gt;</a>
+{% endmacro -%}
+
 <!-- Display a list of emails across a span, as in to/from/cc/bcc/reply_to -->
 {% macro display_emails(key, name) -%}
-  {% if email[key] %}
+  {% set plural_key = key + 's' -%}
+  {% if email[plural_key] -%}
   <div class="row">
     {{ display_label(name) }}
-    {% for email in email[key] -%}
-      {{ display_value(email, name.lower) }}
+    {% for email in email[plural_key] -%}
+      {% set display_name = format_email(email.address, email.real_name) -%}
+      <div class="span" style="display: inline-block">{{ display_name }}</div>
     {% endfor -%}
   </div>
   {% endif -%}

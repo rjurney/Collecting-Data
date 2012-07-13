@@ -8,14 +8,21 @@ import email
 import inspect, pprint
 import getopt
 import time
-from lepl.apps.rfc3696 import Email
+#from lepl.apps.rfc3696 import Email
+
+class Email(object):
+  def __init__(self):
+    if len(email) > 7:
+      if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) != None:
+        return True
+    return False
 
 class EmailUtils(object):
   
   def __init__(self):
     """This class contains utilities for parsing and extracting structure from raw UTF-8 encoded emails"""
     self.is_email = Email()
-    
+  
   def strip_brackets(self, message_id):
     return str(message_id).strip('<>')
   
@@ -60,10 +67,9 @@ class EmailUtils(object):
         validated = None
       return validated
   
-  def process_email(self, raw_email, thread_id):
-    msg = email.message_from_string(raw_email)
+  def process_email(self, msg, thread_id):
     subject = msg['Subject']
-    body = self.get_body(msg)
+    body = get_body(msg)
     
     # Without handling charsets, corrupt avros will get written
     charsets = msg.get_charsets()
@@ -72,25 +78,26 @@ class EmailUtils(object):
       if c != None:
         charset = c
         break
-    print charset
+    
     if charset:
       subject = subject.decode(charset)#.encode('utf-8')
       body = body.decode(charset)#.encode('utf-8')
     else:
       return {}, charset
-    avro_parts = dict({
-      'message_id': self.strip_brackets(msg['Message-ID']),
-      'thread_id': thread_id,
-      'in_reply_to': self.strip_brackets(msg['In-Reply-To']),
+    
+    avro_parts = {
+      'message_id': strip_brackets(msg['Message-ID']),
+      'thread_id': get_thread_id(thread_id),
+      'in_reply_to': strip_brackets(msg['In-Reply-To']),
       'subject': subject,
-      'date': self.parse_date(msg['Date']),
+      'date': parse_date(msg['Date']),
       'body': body,
-      'froms': self.parse_addrs(msg['From']),
-      'tos': self.parse_addrs(msg['To']),
-      'ccs': self.parse_addrs(msg['Cc']),
-      'bccs': self.parse_addrs(msg['Bcc']),
-      'reply_tos': self.parse_addrs(msg['Reply-To'])
-    })
+      'froms': parse_addrs(msg['From']),
+      'tos': parse_addrs(msg['To']),
+      'ccs': parse_addrs(msg['Cc']),
+      'bccs': parse_addrs(msg['Bcc']),
+      'reply_tos': parse_addrs(msg['Reply-To'])
+    }
     return avro_parts, charset
   
   def get_body(self, msg):

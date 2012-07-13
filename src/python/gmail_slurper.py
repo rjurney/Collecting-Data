@@ -1,3 +1,5 @@
+#!/opt/local/bin/python
+
 import imaplib
 import sys, signal
 from avro import schema, datafile, io
@@ -13,7 +15,7 @@ class GmailSlurper(object):
   def __init__(self):
     self.utils = EmailUtils()
     """This class downloads all emails in folders from your Gmail inbox and writes them as raw UTF-8 text in simple Avro records for further processing."""
-
+  
   def init_directory(self, directory):
     if os.path.exists(directory):
       print 'Warning: %(directory)s already exists:' % {"directory":directory}
@@ -60,7 +62,7 @@ class GmailSlurper(object):
       print "Folder '" + str(folder) + " has " + str(count) + "' emails...\n"
       self.folder_count = count
     return status, count
-    
+  
   def fetch_email(self, email_id):
     def timeout_handler(signum, frame):
       raise self.TimeoutException()
@@ -83,6 +85,7 @@ class GmailSlurper(object):
     else:
       raw_thread_id = data[0][0]
       encoded_email = data[0][1]
+    
     try:
       charset = self.utils.get_charset(encoded_email)
 
@@ -95,15 +98,20 @@ class GmailSlurper(object):
       if(charset): # redundant, but saves our ass if we edit above
         raw_email = encoded_email.decode(charset)
         thread_id = self.utils.get_thread_id(raw_thread_id)
+<<<<<<< HEAD
         avro_record, charset = self.utils.process_email(raw_email, thread_id)
         #print avro_record
+=======
+        parsed_email = email.message_from_string(raw_email)
+        avro_record = self.utils.process_email(parsed_email, thread_id)
+>>>>>>> b0e60b6686e631dc34caae5b4ad0e85fcc12f911
       else:
         return 'UNICODE', {}, charset
     except UnicodeDecodeError:
       return 'UNICODE', {}, charset
-    except:
-      print "PARSE ERROR: " + str(sys.exc_info()[0].__name__)
-      return 'PARSE', {}, charset
+    #except:
+    #  print "PARSE ERROR: " + str(sys.exc_info()[0].__name__)
+    #  return 'PARSE', {}, charset
       
     # Without a charset we pass bad chars to avro, and it dies. See AVRO-565.
     if charset:
@@ -115,7 +123,7 @@ class GmailSlurper(object):
     self.avro_writer.close()
     self.imap.close()
     self.imap.logout()
-
+  
   def write(self, record):
     self.avro_writer.append(record)
   
