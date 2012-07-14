@@ -1,0 +1,28 @@
+register '/me/pig/build/ivy/lib/Pig/avro-1.5.3.jar';
+register '/me/pig/build/ivy/lib/Pig/json-simple-1.1.jar';
+register '/me/pig/contrib/piggybank/java/piggybank.jar';
+register '/me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar';
+register '/me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar';
+register '/me/mongo-hadoop/mongo-2.7.3.jar';
+register '/me/mongo-hadoop/core/target/mongo-hadoop-core-1.0.0.jar';
+register '/me/mongo-hadoop/pig/target/mongo-hadoop-pig-1.0.0.jar';
+register '/me/pig/build/ivy/lib/Pig/joda-time-1.6.jar';
+
+define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
+define CustomFormatToISO org.apache.pig.piggybank.evaluation.datetime.convert.CustomFormatToISO();
+define substr org.apache.pig.piggybank.evaluation.string.SUBSTRING();
+define tohour org.apache.pig.piggybank.evaluation.datetime.truncate.ISOToHour();
+define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
+-- register 'udfs.py' using jython as funcs;
+rmf /tmp/sent_distributions.avro
+emails = load '/me/tmp/thu_emails/' USING AvroStorage();
+filtered = filter emails BY ((froms IS not null) and (date IS not null));
+split filtered INTO has_reply_to IF reply_tos IS not null, just_froms IF reply_tos IS null;
+reply_to_f = foreach has_reply_to generate flatten(reply_tos.(address)) as address, substr(tohour(date), 11, 13) AS sent_hour;
+reply_to_froms = foreach has_reply_to generate flatten(froms) AS from, substr(tohour(date), 11, 13) AS sent_hour;
+my_froms = foreach just_froms generate flatten(froms) AS from, substr(tohour(date), 11, 13) AS sent_hour;
+all_froms = union reply_to, reply_to_froms, my_froms;
+pairs = foreach all_froms generate LOWER(from.address) AS email, sent_hour;
+sent_times = foreach  (group pairs by (email, sent_hour))  generate flatten(group)  AS (email, sent_hour), (int)COUNT(pairs) AS total;
+sent_distributions = foreach  (group sent_times by (email))  { solid = filter sent_times BY (sent_hour IS not null) and (total IS not null); sorted = ORDER solid BY sent_hour;  generate group AS email, sorted.(sent_hour, total) AS sent_dist; } ;
+store sent_distributions INTO '/tmp/sent_distributions.avro' USING AvroStorage();
