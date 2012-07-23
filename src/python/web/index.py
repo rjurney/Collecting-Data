@@ -15,6 +15,10 @@ import json, pyelasticsearch
 import config, helpers
 from helpers import *
 
+# For smoothing and filling empty holes in our time series data
+from filler import Filler
+from smooth import Smoother
+
 # Setup Flask
 app = Flask(__name__)
 
@@ -47,17 +51,6 @@ def email(message_id):
   email = emaildb.find_one({"message_id": message_id})
   print email
   return render_template('partials/email.html', email=email)
-
-def fill_in_blanks(in_data):
-  out_data = list()
-  hours = [ '%02d' % i for i in range(24) ]
-  for hour in hours:
-    entry = [x for x in in_data if x['sent_hour'] == hour]
-    if entry:
-      out_data.append(entry[0])
-    else:
-      out_data.append({'sent_hour': hour, 'total': 0})
-  return out_data
 
 # Enable /emails and /emails/ to serve the last 20 emaildb in our inbox unless otherwise specified
 default_offsets={'offset1': 0, 'offset2': 0 + config.EMAIL_RANGE}
@@ -95,10 +88,14 @@ Email Address Entity
 @app.route("/address/<string:email_address>")
 def address(email_address):
   sent_dist = db.sent_dist.find_one({'email': email_address})
-  chart_json = json.dumps(sent_dist['sent_dist'])
+  smitty = Smoother(sent_dist['sent_dist'], 'total')
+  smitty.smooth()
+  smoothed_dist = smitty.to_objects()
+  print smoothed_dist
+  chart_json = json.dumps(smoothed_dist)
   top_friends = db.top_friends.find_one({'email': email_address})['top_20'][0:5]
   return render_template('partials/address.html', email_address=email_address,
-                                                  sent_dist=sent_dist, 
+                                                  sent_dist={"sent_dist": smoothed_dist}, 
                                                   chart_json=chart_json, 
                                                   top_friends=top_friends)
 
