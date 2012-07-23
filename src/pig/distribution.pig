@@ -51,12 +51,12 @@ sent_distributions = foreach (group sent_times by email) {
     sorted = ORDER solid by sent_hour;
     generate group as email, sorted.(sent_hour, total) as sent_dist;
 };
-store sent_distributions into '/tmp/sent_distributions.avro' using AvroStorage();
-store sent_distributions into 'mongodb://localhost/agile_data.sent_dist' using MongoStorage();
+-- store sent_distributions into '/tmp/sent_distributions.avro' using AvroStorage();
+-- store sent_distributions into 'mongodb://localhost/agile_data.sent_dist' using MongoStorage();
 
 -- sent_distributions = load '/tmp/sent_distributions.avro' using AvroStorage();
--- filled_dist = foreach sent_distributions generate email, funcs.fill_in_blanks(sent_dist) as sent_dist;
+filled_dist = foreach sent_distributions generate email, funcs.fill_in_blanks(sent_dist) as sent_dist;
                                                         
--- store filled_dist into '/tmp/filled_distributions.avro' using AvroStorage();
--- store filled_dist into 'mongodb://localhost/agile_data.sent_dist' using MongoStorage();
+store filled_dist into '/tmp/filled_distributions.avro' using AvroStorage();
+store filled_dist into 'mongodb://localhost/agile_data.sent_dist' using MongoStorage();
 -- store sent_distributions into 'mongodb://$user:$password@polarbear.member1.mongohq.com:10004/agile_data.sent_dist' using MongoStorage();
