@@ -6,16 +6,37 @@ register '/me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar';
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
 define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 set aggregate.warning true
-rmf /tmp/reply_tos.avro
+rmf /tmp/with_reply
+rmf /tmp/sent_totals
+rmf /tmp/reply_counts
+rmf /tmp/senders_repliers
+rmf /tmp/reply_ratio
 avro_emails = load '/me/tmp/thu_emails' USING AvroStorage();
-avro_emails = filter avro_emails BY (froms IS not null);
-split avro_emails INTO macro_from_to_pairs_has_reply_tos_0 IF reply_tos IS not null, macro_from_to_pairs_just_froms_0 IF reply_tos IS null;
-macro_from_to_pairs_with_reply_tos_0 = foreach macro_from_to_pairs_has_reply_tos_0 generate reply_tos AS froms, tos, ccs, bccs, message_id, in_reply_to;
-macro_from_to_pairs_reply_to_froms_0 = foreach macro_from_to_pairs_has_reply_tos_0 generate froms, tos, ccs, bccs, message_id, in_reply_to;
-macro_from_to_pairs_just_froms_0 = foreach macro_from_to_pairs_just_froms_0 generate froms, tos, ccs, bccs, message_id, in_reply_to;
-macro_from_to_pairs_combined_emails_0 = union macro_from_to_pairs_with_reply_tos_0, macro_from_to_pairs_reply_to_froms_0, macro_from_to_pairs_just_froms_0;
+clean_emails = filter avro_emails BY ((froms IS not null) and (reply_tos IS null));
+macro_from_to_pairs_combined_emails_0 = foreach macro_from_to_pairs_in_relation_0 generate froms, tos, ccs, bccs, message_id, in_reply_to;
 macro_from_to_pairs_just_tos_0 = foreach macro_from_to_pairs_combined_emails_0 generate flatten(froms.(address))  AS from, flatten(tos.(address))  AS to, message_id, in_reply_to;
 macro_from_to_pairs_just_ccs_0 = foreach macro_from_to_pairs_combined_emails_0 generate flatten(froms.(address))  AS from, flatten(ccs.(address))  AS to, message_id, in_reply_to;
 macro_from_to_pairs_just_bccs_0 = foreach macro_from_to_pairs_combined_emails_0 generate flatten(froms.(address))  AS from, flatten(bccs.(address))  AS to, message_id, in_reply_to;
-pairs = union macro_from_to_pairs_just_tos_0, macro_from_to_pairs_just_ccs_0, macro_from_to_pairs_just_bccs_0;
-store pairs INTO '/tmp/pairs_test';
+macro_from_to_pairs_raw_pairs_0 = union macro_from_to_pairs_just_tos_0, macro_from_to_pairs_just_ccs_0, macro_from_to_pairs_just_bccs_0;
+pairs = filter macro_from_to_pairs_raw_pairs_0 BY (to IS not null);
+just_replies = filter pairs BY (in_reply_to IS not null);
+sent_totals = foreach  (group pairs by (from, to))  generate flatten(group)  AS (from, to), COUNT(pairs) AS total;
+store sent_totals INTO '/tmp/sent_totals';
+also_emails = load '/me/tmp/thu_emails' USING AvroStorage();
+also_clean_emails = filter also_emails BY ((froms IS not null) and (reply_tos IS null));
+macro_from_to_pairs_combined_emails_1 = foreach macro_from_to_pairs_in_relation_1 generate froms, tos, ccs, bccs, message_id, in_reply_to;
+macro_from_to_pairs_just_tos_1 = foreach macro_from_to_pairs_combined_emails_1 generate flatten(froms.(address))  AS from, flatten(tos.(address))  AS to, message_id, in_reply_to;
+macro_from_to_pairs_just_ccs_1 = foreach macro_from_to_pairs_combined_emails_1 generate flatten(froms.(address))  AS from, flatten(ccs.(address))  AS to, message_id, in_reply_to;
+macro_from_to_pairs_just_bccs_1 = foreach macro_from_to_pairs_combined_emails_1 generate flatten(froms.(address))  AS from, flatten(bccs.(address))  AS to, message_id, in_reply_to;
+macro_from_to_pairs_raw_pairs_1 = union macro_from_to_pairs_just_tos_1, macro_from_to_pairs_just_ccs_1, macro_from_to_pairs_just_bccs_1;
+also_pairs = filter macro_from_to_pairs_raw_pairs_1 BY (to IS not null);
+with_reply = join just_replies by (in_reply_to), also_pairs by (message_id);
+store with_reply INTO '/tmp/with_reply';
+replies = foreach with_reply generate just_replies::from AS replier, also_pairs::from AS sender;
+store replies INTO '/tmp/senders_repliers';
+reply_counts = foreach  (group replies by (sender, replier))  generate FLATTEN(group)  AS (sender, replier), COUNT(replies) AS total;
+store reply_counts INTO '/tmp/reply_counts';
+senders_repliers = join sent_totals by (from, to), reply_counts by (sender, replier);
+store senders_repliers INTO '/tmp/senders_repliers';
+reply_ratio = foreach senders_repliers generate from AS from, to AS to, sent_totals::total AS total_sent, reply_counts::total AS total_replies, (float)reply_counts::total / (float)sent_totals::total AS reply_ratio:float;
+store reply_ratio INTO '/tmp/reply_ratio.avro' USING AvroStorage();

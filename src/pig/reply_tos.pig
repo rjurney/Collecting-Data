@@ -1,53 +1,60 @@
 register /me/pig/build/ivy/lib/Pig/avro-1.5.3.jar
 register /me/pig/build/ivy/lib/Pig/json-simple-1.1.jar
 register /me/pig/contrib/piggybank/java/piggybank.jar
-register /me/pig/build/ivy/lib/Pig/jackson-core-asl-1.7.3.jar
-register /me/pig/build/ivy/lib/Pig/jackson-mapper-asl-1.7.3.jar
 
 define AvroStorage org.apache.pig.piggybank.storage.avro.AvroStorage();
-define MongoStorage com.mongodb.hadoop.pig.MongoStorage();
 
-set aggregate.warning 'true';
-import 'macros.pig';
-
+rmf /tmp/sent_mails
+rmf /tmp/replies
 rmf /tmp/with_reply
-rmf /tmp/sent_totals
-rmf /tmp/reply_counts
-rmf /tmp/senders_repliers
-rmf /tmp/reply_ratio.avro
 
-/* Get all unique combinations of from/reply_to and to/cc/bcc */
+/* Get rid of emails with reply_to, as they confuse everything in mailing lists. */
 avro_emails = load '/me/tmp/thu_emails' using AvroStorage();
-avro_emails = filter avro_emails by (froms is not null);
-pairs = from_to_pairs(avro_emails);
+clean_emails = filter avro_emails by (froms is not null) and (reply_tos is null);
 
-/* Just replies */
-just_replies = filter pairs by in_reply_to is not null;
+/* Treat emails without in_reply_to as sent emails */
+combined_emails = foreach clean_emails generate froms, tos, message_id;
+sent_mails = foreach combined_emails generate flatten(froms.address) as from, 
+                                              flatten(tos.address) as to, 
+                                              message_id;
+-- store sent_mails into '/tmp/sent_mails';
+sent_counts = foreach (group sent_mails by (from, to)) generate flatten(group) as (from, to), 
+                                                                COUNT_STAR(sent_mails) as total;
+-- store sent_counts into '/tmp/sent_counts';
 
-/* Get the number of total emails sent between addresses */
-sent_totals = foreach (group pairs by (from, to)) generate flatten(group) as (from, to), COUNT(pairs) as total;
-store sent_totals into '/tmp/sent_totals';
-
-also_emails = load '/me/tmp/thu_emails' using AvroStorage();
-also_emails = filter also_emails BY (froms is not null);
-also_pairs = from_to_pairs(also_emails);
+/* Treat in_reply_tos separately, as our FLATTEN() will filter otu the nulls */
+avro_emails2 = load '/me/tmp/thu_emails' using AvroStorage();
+replies = filter avro_emails2 by (froms is not null) and (reply_tos is null) and (in_reply_to is not null);
+replies = foreach replies generate flatten(froms.address) as from,
+                                   flatten(tos.address) as to,
+                                   in_reply_to;
+replies = filter replies by in_reply_to != 'None';
+-- store replies into '/tmp/replies';
 
 /* Now join a copy of the emails by message id to the in_reply_to of our emails */
-with_reply = join just_replies by in_reply_to, also_pairs by message_id;
-store with_reply into '/tmp/with_reply';
+with_reply = join sent_mails by message_id, replies by in_reply_to;
+-- store with_reply into '/tmp/with_reply';
 
-replies = foreach with_reply generate just_replies::from as replier, also_pairs::from as sender;
-reply_counts = foreach (group replies by (sender, replier)) generate FLATTEN(group) as (sender, replier), COUNT(replies) as total;
-store reply_counts into '/tmp/reply_counts';
+/* Filter out mailing lists - only direct replies where from/to match up */
+direct_replies = filter with_reply by (sent_mails::from == replies::to) and (sent_mails::to == replies::from);
+-- store direct_replies into '/tmp/direct_replies';
+direct_replies = foreach direct_replies generate sent_mails::from as from, sent_mails::to as to;
+reply_counts = foreach (group direct_replies by (from, to)) generate flatten(group) as (from, to), 
+                                                                     COUNT_STAR(direct_replies) as total;
+-- store reply_counts into '/tmp/reply_counts';
 
-/* Now join sent totals and reply counts */
-senders_repliers = join sent_totals by (from, to), reply_counts by (sender, replier);
-store senders_repliers into '/tmp/senders_repliers';
+/* Join sent counts and replied counts to get the reply rates */
+sent_replies = join sent_counts by (from, to), reply_counts by (from, to);
+reply_ratios = foreach sent_replies generate sent_counts::from as from, 
+                                            sent_counts::to as to, 
+                                            (float)reply_counts::total/(float)sent_counts::total as ratio;
+reply_ratios = foreach reply_ratios generate from, to, (ratio > 1.0 ? 1.0 : ratio) as ratio;
+-- store reply_ratios into '/tmp/reply_ratios';
 
-/* Now convert to sent/replies */
-reply_ratio = foreach senders_repliers generate from as from, 
-                                                to as to, 
-                                                sent_totals::total as total_sent,
-                                                reply_counts::total as total_replies,
-                                                (float)reply_counts::total/(float)sent_totals::total as reply_ratio:float;
-store reply_ratio into '/tmp/reply_ratio.avro' using AvroStorage();
+reply_ratios_2 = load '/tmp/reply_ratios' as (from:chararray, to:chararray, ratio:float);
+both_sides = join reply_ratios by (from, to), reply_ratios_2 by (to, from);
+reciprocation = foreach both_sides generate reply_ratios::from as from,
+                                            reply_ratios::to as to,
+                                            (float)reply_ratios::ratio/(float)reply_ratios_2::ratio as skew;
+store reciprocation into '/tmp/reciprocation';
+

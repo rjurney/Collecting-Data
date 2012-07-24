@@ -23,31 +23,22 @@ DEFINE get_addresses(in_relation, group_name, field_name) RETURNS addresses {
 };
 
 /* Given emails, split them out into all from/reply_to + to/cc/bcc pairs. */
-DEFINE from_to_pairs(in_relation) RETURNS pairs {
-  
-  /* We need to insert reply_to as a valid from or email addresses will miss in our index */
-  split $in_relation into has_reply_tos if (reply_tos is not null), just_froms if (reply_tos is null);
-  
-  /* Count both the from and reply_to as valid froms if there is a reply_tos field */
-  with_reply_tos = foreach has_reply_tos generate reply_tos as froms, tos, ccs, bccs, message_id, in_reply_to;
-  reply_to_froms = foreach has_reply_tos generate froms, tos, ccs, bccs, message_id, in_reply_to;
+DEFINE from_to_pairs(in_relation) RETURNS macro_pairs {
   
   /* Treat emails without reply_to as normal */
-  just_froms = foreach just_froms generate froms, tos, ccs, bccs, message_id, in_reply_to;
-  
-  /* Now union them all and we have our dataset to compute on */
-  combined_emails = union with_reply_tos, reply_to_froms, just_froms;
+  combined_emails = foreach $in_relation generate froms, tos, ccs, bccs, message_id, in_reply_to;
   
   /* Now pair up our froms/reply_tos with all recipient types, 
      and union them to get a sender/recipient connection list. */
   just_tos = foreach combined_emails generate flatten(froms.address) as from, flatten(tos.address) as to, message_id, in_reply_to;
-  just_ccs = foreach combined_emails generate flatten(froms.address) as from, flatten(ccs.address) as to, message_id, in_reply_to;
-  just_bccs = foreach combined_emails generate flatten(froms.address) as from, flatten(bccs.address) as to, message_id, in_reply_to;
-  raw_pairs = union just_tos, just_ccs, just_bccs;
   
   /* Make sure we don't count nulls */
-  $pairs = filter raw_pairs by to is not null;
+  $macro_pairs = filter just_tos by (from is not null) and to is not null);
 };
+
+/*DEFINE mailing_list_filter(all_emails) RETURNS non_list_emails {
+  has_reply_to = FILTER all_emails by reply_tos is not null;
+};*/
 
 /* Given a document relation with a text column and a unique id column, 
    count the number of times each word occurs in each document, and divide that by

@@ -1,4 +1,8 @@
-#!/usr/bin/python
+import email
+
+@outputSchema("domain:chararray")
+def domain(email_address):
+  return email_address
 
 @outputSchema("sent_dist:bag{t:(sent_hour:chararray, total:int)}")
 def fill_in_blanks(sent_dist):
